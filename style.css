@@ -1,0 +1,96 @@
+:root {
+  --ink: #2a1033;
+  --cream: #fff8e7;
+  --pink: #ff5a8a;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+html, body { height: 100%; }
+
+body {
+  background: #ffd61f url("assets/background.webp") center / cover no-repeat;
+  color: var(--ink);
+  font-family: "Rubik", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 16px;
+  gap: clamp(12px, 2.5vh, 28px);
+}
+
+.eyebrow {
+  font-weight: 700;
+  font-size: clamp(0.8rem, 1.6vw, 1.25rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: var(--cream);
+  padding: 0.5em 1.1em;
+  border-radius: 999px;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.title {
+  font-family: "Bagel Fat One", "Rubik", sans-serif;
+  font-weight: 400;
+  font-size: clamp(4rem, 17vw, 15rem);
+  line-height: 0.9;
+  color: var(--cream);
+  /* chunky "silhouette" offset shadow */
+  text-shadow: 0.06em 0.06em 0 var(--ink);
+  animation: wobble 4s ease-in-out infinite;
+}
+
+.tagline {
+  font-weight: 500;
+  font-size: clamp(1rem, 2.4vw, 1.9rem);
+}
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(-2deg) scale(1); }
+  50%      { transform: rotate(2deg) scale(1.03); }
+}
+
+/* Fullscreen toggle */
+.fs-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: var(--cream);
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.4s;
+}
+.fs-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+.fs-btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+.fs-btn:focus-visible { outline: 3px solid var(--pink); outline-offset: 4px; }
+.fs-btn svg {
+  width: 26px; height: 26px;
+  fill: none; stroke: var(--ink); stroke-width: 2.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.fs-btn .icon-exit { display: none; }
+.is-fullscreen .fs-btn .icon-enter { display: none; }
+.is-fullscreen .fs-btn .icon-exit { display: block; }
+
+/* In fullscreen, fade the button + cursor away when idle */
+.is-fullscreen.idle { cursor: none; }
+.is-fullscreen.idle .fs-btn { opacity: 0; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .title { animation: none; }
+}
