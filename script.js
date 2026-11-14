@@ -6,7 +6,7 @@ const SCENE_SECONDS = 30;
 const SVG_NS = "http://www.w3.org/2000/svg";
 const LEN = { torso: 62, shoulder: 54, ua: 34, fa: 32, th: 46, sh: 46, head: 17 };
 const WIDTH = { torso: 34, shoulders: 20, hips: 26, arm: 14, leg: 17 };
-const SPACING = 140;
+const SPACING = 125;
 
 const stage = document.getElementById("stage");
 const timerEl = document.getElementById("timer");
@@ -102,12 +102,10 @@ function renderScene(scene) {
     box = [Math.min(box[0], b[0] + x), Math.min(box[1], b[1]), Math.max(box[2], b[2] + x), 0];
   });
 
-  // Keep a consistent scale between scenes: never frame less than one tall, wide-ish figure
-  const minW = 360, minH = 300;
-  let [x0, y0, x1] = box;
-  const w = Math.max(x1 - x0, minW), h = Math.max(-y0, minH);
-  const cx = (x0 + x1) / 2;
-  svg.setAttribute("viewBox", `${cx - w / 2} ${-h} ${w} ${h + 14}`);
+  // Frame the figures tightly so they fill the screen height (width only limits wide groups)
+  const [x0, y0, x1] = box;
+  const w = x1 - x0, h = -y0;
+  svg.setAttribute("viewBox", `${x0} ${-h} ${w} ${h + 12}`);
 
   stage.replaceChildren(svg);
 }
