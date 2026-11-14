@@ -34,7 +34,7 @@ python3 -m http.server 8000
 
 ## Fullscreen
 
-Click the button in the bottom-right corner or press **F**. While fullscreen, the button, hint and cursor hide after a few seconds of no movement.
+Click the button in the bottom-right corner or press **F**. While fullscreen, the button and cursor hide after a few seconds of no movement.
 
 ## Files
 

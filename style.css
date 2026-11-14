@@ -19,41 +19,6 @@ body {
   height: 100dvh;
 }
 
-/* ---------- Header ---------- */
-.top {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: clamp(6px, 1.2vh, 14px);
-  padding: clamp(16px, 3vh, 36px) 16px 0;
-}
-
-.eyebrow {
-  font-weight: 700;
-  font-size: clamp(0.7rem, 1.2vw, 1rem);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  background: var(--cream);
-  padding: 0.45em 1.1em;
-  border-radius: 999px;
-  box-shadow: 3px 3px 0 var(--ink);
-}
-
-.title {
-  font-family: "Bagel Fat One", "Rubik", sans-serif;
-  font-weight: 400;
-  font-size: clamp(2.2rem, 6.5vw, 6rem);
-  line-height: 1;
-  color: var(--cream);
-  text-shadow: 0.06em 0.06em 0 var(--ink);
-}
-
-.scene-name {
-  font-weight: 700;
-  font-size: clamp(1rem, 2vw, 1.6rem);
-}
-
 /* ---------- Silhouette stage ---------- */
 .stage {
   flex: 1;
@@ -61,7 +26,7 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 2vh 16px 0;
+  padding: 6vh 16px 0;
 }
 
 .stage svg {
@@ -90,7 +55,7 @@ body {
   to   { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-/* ---------- Footer: timer + hint ---------- */
+/* ---------- Footer: timer ---------- */
 .bottom {
   display: flex;
   align-items: center;
@@ -129,15 +94,6 @@ body {
 .timer.paused span { font-size: clamp(0.8rem, 1.2vw, 1.1rem); }
 .timer.urgent span { color: #d6175a; }
 
-.hint {
-  font-weight: 500;
-  font-size: clamp(0.75rem, 1.1vw, 1rem);
-  background: var(--cream);
-  padding: 0.5em 1em;
-  border-radius: 999px;
-  box-shadow: 3px 3px 0 var(--ink);
-  transition: opacity 0.4s;
-}
 
 /* ---------- Fullscreen toggle ---------- */
 .fs-btn {
@@ -167,14 +123,9 @@ body {
 .is-fullscreen .fs-btn .icon-enter { display: none; }
 .is-fullscreen .fs-btn .icon-exit { display: block; }
 
-/* In fullscreen, fade the button, hint and cursor away when idle */
+/* In fullscreen, fade the button and cursor away when idle */
 .is-fullscreen.idle { cursor: none; }
-.is-fullscreen.idle .fs-btn,
-.is-fullscreen.idle .hint { opacity: 0; pointer-events: none; }
-
-@media (max-width: 600px) {
-  .hint { display: none; }
-}
+.is-fullscreen.idle .fs-btn { opacity: 0; pointer-events: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .figure { animation: none; }

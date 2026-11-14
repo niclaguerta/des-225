@@ -9,7 +9,6 @@ const WIDTH = { torso: 34, shoulders: 20, hips: 26, arm: 14, leg: 17 };
 const SPACING = 140;
 
 const stage = document.getElementById("stage");
-const sceneName = document.getElementById("sceneName");
 const timerEl = document.getElementById("timer");
 const timerText = document.getElementById("timerText");
 const timerRing = document.getElementById("timerRing");
@@ -111,7 +110,6 @@ function renderScene(scene) {
   svg.setAttribute("viewBox", `${cx - w / 2} ${-h} ${w} ${h + 14}`);
 
   stage.replaceChildren(svg);
-  sceneName.textContent = `Scene ${current + 1} of ${SCENES.length} · ${scene.name}`;
 }
 
 /* ---------- Scene switching + timer ---------- */
