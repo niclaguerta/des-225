@@ -13,53 +13,133 @@ body {
   color: var(--ink);
   font-family: "Rubik", system-ui, sans-serif;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
 }
 
-.stage {
-  min-height: 100vh;
-  min-height: 100dvh;
+/* ---------- Header ---------- */
+.top {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   text-align: center;
-  padding: 24px 16px;
-  gap: clamp(12px, 2.5vh, 28px);
+  gap: clamp(6px, 1.2vh, 14px);
+  padding: clamp(16px, 3vh, 36px) 16px 0;
 }
 
 .eyebrow {
   font-weight: 700;
-  font-size: clamp(0.8rem, 1.6vw, 1.25rem);
+  font-size: clamp(0.7rem, 1.2vw, 1rem);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   background: var(--cream);
-  padding: 0.5em 1.1em;
+  padding: 0.45em 1.1em;
   border-radius: 999px;
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 .title {
   font-family: "Bagel Fat One", "Rubik", sans-serif;
   font-weight: 400;
-  font-size: clamp(4rem, 17vw, 15rem);
-  line-height: 0.9;
+  font-size: clamp(2.2rem, 6.5vw, 6rem);
+  line-height: 1;
   color: var(--cream);
-  /* chunky "silhouette" offset shadow */
   text-shadow: 0.06em 0.06em 0 var(--ink);
-  animation: wobble 4s ease-in-out infinite;
 }
 
-.tagline {
+.scene-name {
+  font-weight: 700;
+  font-size: clamp(1rem, 2vw, 1.6rem);
+}
+
+/* ---------- Silhouette stage ---------- */
+.stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 2vh 16px 0;
+}
+
+.stage svg {
+  width: 100%;
+  height: 100%;
+  max-width: 1400px;
+  overflow: visible;
+}
+
+.figure {
+  fill: var(--ink);
+  stroke: var(--ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: pop 0.6s cubic-bezier(.34, 1.56, .64, 1) both;
+  animation-delay: calc(var(--i) * 110ms);
+}
+.figure .limb { fill: none; }
+
+.floor-shadow { fill: var(--ink); opacity: 0.18; }
+
+@keyframes pop {
+  from { transform: scale(0.2) translateY(30px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* ---------- Footer: timer + hint ---------- */
+.bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 88px clamp(16px, 3vh, 28px);
+  position: relative;
+}
+
+.timer {
+  position: relative;
+  width: clamp(56px, 6vw, 84px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.timer svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.timer .track { fill: var(--cream); stroke: var(--ink); stroke-width: 3; }
+.timer .ring {
+  fill: none;
+  stroke: var(--pink);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 169.65;  /* 2 * pi * 27 */
+}
+.timer span {
+  position: relative;
+  font-family: "Bagel Fat One", "Rubik", sans-serif;
+  font-size: clamp(1.2rem, 2vw, 1.9rem);
+}
+.timer.paused span { font-size: clamp(0.8rem, 1.2vw, 1.1rem); }
+.timer.urgent span { color: #d6175a; }
+
+.hint {
   font-weight: 500;
-  font-size: clamp(1rem, 2.4vw, 1.9rem);
+  font-size: clamp(0.75rem, 1.1vw, 1rem);
+  background: var(--cream);
+  padding: 0.5em 1em;
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: opacity 0.4s;
 }
 
-@keyframes wobble {
-  0%, 100% { transform: rotate(-2deg) scale(1); }
-  50%      { transform: rotate(2deg) scale(1.03); }
-}
-
-/* Fullscreen toggle */
+/* ---------- Fullscreen toggle ---------- */
 .fs-btn {
   position: fixed;
   right: 20px;
@@ -87,10 +167,15 @@ body {
 .is-fullscreen .fs-btn .icon-enter { display: none; }
 .is-fullscreen .fs-btn .icon-exit { display: block; }
 
-/* In fullscreen, fade the button + cursor away when idle */
+/* In fullscreen, fade the button, hint and cursor away when idle */
 .is-fullscreen.idle { cursor: none; }
-.is-fullscreen.idle .fs-btn { opacity: 0; pointer-events: none; }
+.is-fullscreen.idle .fs-btn,
+.is-fullscreen.idle .hint { opacity: 0; pointer-events: none; }
+
+@media (max-width: 600px) {
+  .hint { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .title { animation: none; }
+  .figure { animation: none; }
 }
