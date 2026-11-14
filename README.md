@@ -2,7 +2,7 @@
 
 Website for a playful DES 225 installation: visitors are encouraged to match the silhouettes on the wall.
 
-Currently a **Coming Soon** page that cycles through silhouette scenes (solo poses and groups of 2–4) for people to match.
+Currently a **Coming Soon** page that cycles through silhouette scenes (solo poses and groups of 2–4) for people to match. Scenes are designed to be inclusive: some figures sit (wheelchair, chair) or use mobility aids (cane, crutches with a leg cast, knee scooter, walker), mixed in with standing poses.
 
 ## Controls
 
@@ -16,7 +16,7 @@ Each scene auto-advances after 30 seconds. Change `SCENE_SECONDS` at the top of 
 
 ## Editing scenes
 
-Scenes live in `scenes.js`. Each scene is a name plus a list of figures that use a pose from `POSES`. You can also use an image instead of a drawn pose, for example an SVG downloaded from the Noun Project:
+Scenes live in `scenes.js`. Each scene is a name plus a list of figures that use a pose from `POSES`. Poses can include a `prop` (wheelchair, chair, cane, crutches, kneeScooter, walker) and a `cast` on one leg. Figures in a group are packed as close as they can get without touching; change `GAP` in `script.js` to space them out. You can also use an image instead of a drawn pose, for example an SVG downloaded from the Noun Project:
 
 ```js
 { name: "Ballerina", figures: [{ src: "assets/silhouettes/ballerina.svg", h: 220 }] }

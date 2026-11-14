@@ -3,10 +3,13 @@
     0 = pointing straight down, 90 = pointing right, -90 = pointing left, 180 = straight up.
     l* = limbs on the LEFT of the screen, r* = limbs on the RIGHT.
     UA = upper arm, FA = forearm, Th = thigh, Sh = shin, lean = torso tilt (+ leans right).
+    prop:  a seat or mobility aid drawn with the figure: wheelchair, chair, cane, crutches,
+           kneeScooter, walker (seated and side-view poses face right; flip to face left).
+    cast:  "l" or "r" draws a cast on that leg.
 
   SCENES — each scene is a list of figures.
     pose:  a name from POSES
-    x:     horizontal position (optional; figures are spaced evenly if left out)
+    x:     horizontal position (optional; if left out, figures are packed side by side)
     flip:  mirror the pose left/right
     lift:  raise the figure off the floor (for jumps)
     tweak: override any angle for this one figure, e.g. { lean: -12 }
@@ -29,55 +32,83 @@ const POSES = {
   squat:    { lUA: -92,  lFA: -96,  rUA: 92,  rFA: 96,  lTh: -68, lSh: 6,   rTh: 68,  rSh: -6 },
   dab:      { lUA: 118,  lFA: 62,   rUA: 128, rFA: 128, lTh: -12, lSh: -10, rTh: 12,  rSh: 10, lean: -8 },
   tilt:     { lUA: -150, lFA: -150, rUA: 30,  rFA: 30,  lTh: -12, lSh: -10, rTh: 10,  rSh: 8, lean: 22 },
+
+  // Seated
+  wheelchair:     { prop: "wheelchair", lUA: 15,  lFA: 50,  rUA: 15,  rFA: 50,  lTh: 88, lSh: 2, rTh: 86, rSh: 4 },
+  wheelchairWave: { prop: "wheelchair", lUA: 15,  lFA: 50,  rUA: 140, rFA: 170, lTh: 88, lSh: 2, rTh: 86, rSh: 4 },
+  wheelchairUp:   { prop: "wheelchair", lUA: 165, lFA: 172, rUA: 155, rFA: 165, lTh: 88, lSh: 2, rTh: 86, rSh: 4 },
+  sitChair:       { prop: "chair", lUA: 20,   lFA: 75,   rUA: 25,  rFA: 80,  lTh: 88, lSh: 2, rTh: 86, rSh: 4 },
+  sitChairStar:   { prop: "chair", lUA: -130, lFA: -135, rUA: 130, rFA: 135, lTh: 88, lSh: 2, rTh: 86, rSh: 4 },
+
+  // Standing with mobility aids
+  cane:        { prop: "cane", lUA: -12,  lFA: -6,   rUA: 25, rFA: 15, lTh: -6, lSh: -4, rTh: 8, rSh: 6, lean: 4 },
+  caneWave:    { prop: "cane", lUA: -130, lFA: -170, rUA: 25, rFA: 15, lTh: -6, lSh: -4, rTh: 8, rSh: 6, lean: 4 },
+  crutches:    { prop: "crutches", cast: "r", lUA: -26, lFA: -16, rUA: 26, rFA: 16, lTh: -4, lSh: -2, rTh: 48, rSh: 22 },
+  kneeScooter: { prop: "kneeScooter", cast: "r", lean: 8, lUA: 40, lFA: 50, rUA: 40, rFA: 50, lTh: 2, lSh: 0, rTh: 25, rSh: -90 },
+  walker:      { prop: "walker", lean: 10, lUA: 30, lFA: 40, rUA: 30, rFA: 40, lTh: -6, lSh: -4, rTh: 10, rSh: 6 },
 };
 
 const SCENES = [
   { name: "Reach for the sky", figures: [{ pose: "armsUp" }] },
+  { name: "Wheelie wave",      figures: [{ pose: "wheelchairWave" }] },
   { name: "Superstar",         figures: [{ pose: "star" }] },
+  { name: "Take a seat",       figures: [{ pose: "sitChairStar" }] },
   { name: "Flamingo",          figures: [{ pose: "flamingo" }] },
+  { name: "Cane & wave",       figures: [{ pose: "caneWave" }] },
+  { name: "Scoot!",            figures: [{ pose: "kneeScooter" }] },
   { name: "Show your muscles", figures: [{ pose: "strong" }] },
-  { name: "Mirror, mirror", figures: [
-      { pose: "point", x: -75 },
-      { pose: "point", x: 75, flip: true },
-  ]},
+  { name: "Crutch champ",      figures: [{ pose: "crutches" }] },
   { name: "High five", figures: [
       { pose: "wave", x: -50 },
       { pose: "wave", x: 50, flip: true },
   ]},
+  { name: "Hello, neighbour", figures: [
+      { pose: "wheelchairWave" },
+      { pose: "wave", flip: true },
+  ]},
+  { name: "Mirror, mirror", figures: [
+      { pose: "point" },
+      { pose: "point", flip: true },
+  ]},
   { name: "Teapot & friend", figures: [
-      { pose: "teapot", x: -70 },
-      { pose: "hips", x: 80 },
+      { pose: "teapot" },
+      { pose: "sitChair", flip: true },
   ]},
   { name: "Back to back", figures: [
-      { pose: "lunge", x: -55, flip: true },
-      { pose: "lunge", x: 55 },
+      { pose: "lunge", flip: true },
+      { pose: "lunge" },
   ]},
   { name: "Human pyramid", figures: [
-      { pose: "tilt", x: -120, flip: true },
-      { pose: "armsUp", x: 0 },
-      { pose: "tilt", x: 120 },
+      { pose: "tilt", flip: true },
+      { pose: "wheelchairUp" },
+      { pose: "tilt" },
   ]},
   { name: "Jump squad", figures: [
       { pose: "star", lift: 30 },
       { pose: "squat" },
       { pose: "star", lift: 30 },
   ]},
+  { name: "Walk this way", figures: [
+      { pose: "walker" },
+      { pose: "cane" },
+      { pose: "kneeScooter" },
+  ]},
   { name: "Chorus line", figures: [
       { pose: "flamingo" },
+      { pose: "crutches" },
       { pose: "flamingo", flip: true },
-      { pose: "flamingo" },
-      { pose: "flamingo", flip: true },
+      { pose: "sitChairStar" },
   ]},
   { name: "The wave", figures: [
       { pose: "squat" },
-      { pose: "stand" },
+      { pose: "sitChair" },
       { pose: "wave" },
       { pose: "armsUp" },
   ]},
   { name: "Dance party", figures: [
       { pose: "dab" },
+      { pose: "wheelchairWave" },
       { pose: "star", lift: 20 },
-      { pose: "dab", flip: true },
-      { pose: "strong" },
+      { pose: "caneWave", flip: true },
   ]},
 ];
