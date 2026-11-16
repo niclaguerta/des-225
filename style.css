@@ -25,7 +25,7 @@ body {
   position: fixed;
   inset: -24px;
   z-index: -1;
-  background: url("assets/background.webp?v=2") center / cover no-repeat;
+  background: url("assets/background.png") center / cover no-repeat;
   filter: url(#boil-bg);
 }
 .filters { position: absolute; width: 0; height: 0; }
