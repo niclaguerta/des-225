@@ -106,9 +106,10 @@ function renderScene(scene) {
   const y0 = -Math.max(...scene.figures.map((f) => f.h || ICON_H));
   const shift = -(x0 + x1) / 2;
 
+  const boil = el("g", { filter: "url(#boil-fig)" }, svg); // hand-drawn wobble (see index.html)
   placed.forEach(({ icon, x }, i) => {
     // Outer group positions the figure; inner group animates (a CSS transform would override the position)
-    const pos = el("g", { transform: `translate(${x + shift} 0)` }, svg);
+    const pos = el("g", { transform: `translate(${x + shift} 0)` }, boil);
     const g = el("g", { class: "figure", style: `--i:${i}` }, pos);
     el("path", { d: icon.d, transform: `matrix(${icon.m.join(" ")})` }, g);
   });
@@ -206,6 +207,19 @@ function wake() {
 wake();
 
 if (!(root.requestFullscreen || root.webkitRequestFullscreen)) btn.hidden = true;
+
+/* ---------- Line boil ---------- */
+// Step through a few noise patterns, like redrawing the frame (skipped if the viewer prefers less motion)
+const BOIL_FPS = 10;
+const BOIL_SEEDS = [1, 2, 3, 4];
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const noise = document.querySelectorAll(".boil-noise");
+  let step = 0;
+  setInterval(() => {
+    step = (step + 1) % BOIL_SEEDS.length;
+    noise.forEach((n) => n.setAttribute("seed", BOIL_SEEDS[step]));
+  }, 1000 / BOIL_FPS);
+}
 
 /* ---------- Start ---------- */
 goTo(0);
