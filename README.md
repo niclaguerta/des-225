@@ -24,13 +24,15 @@ Scenes live in `scenes.js`. Each scene is a name plus a list of 1–4 icons from
 
 Every scene stands on the bottom edge of the screen, so set the screen so its bottom edge meets the floor. Figures in a group are packed as close as they fit; change `GAP` in `script.js` to space them out.
 
-To add another Noun Project icon, copy the `d="…"` value of the SVG's `<path>` into `icons.js` under a new name. Leave out the "Created by…" text, and add the artist to the credits below. After any change, bump the `?v=` number in `index.html` so browsers load the new files.
+To add another Noun Project icon, copy the `d="…"` value of the SVG's `<path>` into `icons.js` under a new name (circles, ellipses and polygons need converting to path data first). Leave out the "Created by…" text, and add the artist to the credits below. After any change, bump the `?v=` number in `index.html` so browsers load the new files.
 
 ## Credits
 
 Silhouette icons by Lewen Design from Noun Project: Skateboarding, Weightlifting, Basketball, Horse Riding, Golf, Hiking, Cycling, Rowing, Fencing, Wrestling, Tug of War, Billiards and Pull-up.
 
 Silhouette icons by Toni Olm from Noun Project: Angler, Drinking Bottle and Taking the Dog for a Walk.
+
+Silhouette icons by Gan Khoon Lay from Noun Project: Haunting and Man Shouting.
 
 ## Run locally
 

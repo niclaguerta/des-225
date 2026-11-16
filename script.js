@@ -24,7 +24,7 @@ function el(tag, attrs, parent) {
 /* ---------- Icons (icons.js) ---------- */
 // Measure each icon once: draw it on a small hidden canvas and record, for every pixel row,
 // the leftmost and rightmost filled pixel. Groups use these spans to pack tightly.
-const RASTER = 4; // canvas pixels per icon unit
+const RASTER = 400; // canvas size (pixels) for the icon's longer side
 const iconCache = {};
 function iconData(name) {
   if (iconCache[name]) return iconCache[name];
@@ -34,9 +34,10 @@ function iconData(name) {
   const box = el("path", { d }, svg).getBBox();
   svg.remove();
 
-  const w = Math.ceil(box.width * RASTER) + 2, h = Math.ceil(box.height * RASTER) + 2;
+  const R = RASTER / Math.max(box.width, box.height); // pixels per icon unit
+  const w = Math.ceil(box.width * R) + 2, h = Math.ceil(box.height * R) + 2;
   const ctx = Object.assign(document.createElement("canvas"), { width: w, height: h }).getContext("2d", { willReadFrequently: true });
-  ctx.setTransform(RASTER, 0, 0, RASTER, 1 - box.x * RASTER, 1 - box.y * RASTER);
+  ctx.setTransform(R, 0, 0, R, 1 - box.x * R, 1 - box.y * R);
   ctx.fill(new Path2D(d));
   const px = ctx.getImageData(0, 0, w, h).data;
   const rows = []; // [y, xLeft, xRight] in icon units
@@ -44,8 +45,8 @@ function iconData(name) {
     let lo = -1, hi = -1;
     for (let c = 0; c < w; c++) if (px[(r * w + c) * 4 + 3] > 64) { if (lo < 0) lo = c; hi = c; }
     if (lo >= 0) {
-      const toX = (c) => box.x + (c - 1) / RASTER;
-      rows.push([box.y + (r - 0.5) / RASTER, toX(lo), toX(hi + 1)]);
+      const toX = (c) => box.x + (c - 1) / R;
+      rows.push([box.y + (r - 0.5) / R, toX(lo), toX(hi + 1)]);
     }
   }
   return (iconCache[name] = { d, box, rows });
