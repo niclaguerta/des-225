@@ -1,25 +1,18 @@
 /* ============================================================
-   Scenes: draw silhouettes, switch with ← →, auto-advance timer
+   Scenes: show silhouettes, switch with ← →, auto-advance timer
    ============================================================ */
 const SCENE_SECONDS = 30;
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const LEN = { torso: 62, shoulder: 54, ua: 34, fa: 32, th: 46, sh: 46, head: 17 };
-const WIDTH = { torso: 34, shoulders: 20, hips: 26, arm: 14, leg: 17 };
-const GAP = 4; // space between neighbouring figures in a group (0 = hands touching)
+const GAP = 12;     // space between neighbouring figures in a group (0 = touching)
+const ICON_H = 210; // default height of an icon, in scene units
+const BAND = 6;     // height of the slices used to pack figures together
 
 const stage = document.getElementById("stage");
 const timerEl = document.getElementById("timer");
 const timerText = document.getElementById("timerText");
 const timerRing = document.getElementById("timerRing");
 const RING_LEN = 2 * Math.PI * 27;
-
-// angle 0 = down, 90 = right, 180 = up (y grows downward in SVG)
-const dir = (deg) => {
-  const r = (deg * Math.PI) / 180;
-  return [Math.sin(r), Math.cos(r)];
-};
-const add = (p, d, len) => [p[0] + d[0] * len, p[1] + d[1] * len];
 
 function el(tag, attrs, parent) {
   const n = document.createElementNS(SVG_NS, tag);
@@ -28,157 +21,8 @@ function el(tag, attrs, parent) {
   return n;
 }
 
-// Joint positions for a pose, with the hip at (0, 0). Grounding and mirroring happen later.
-function skeleton(pose) {
-  const lean = pose.lean || 0;
-  const up = dir(180 - lean);
-  const hip = [0, 0];
-  const neck = add(hip, up, LEN.torso);
-  const sc = add(hip, up, LEN.shoulder);
-  const lS = [sc[0] - 11, sc[1]], rS = [sc[0] + 11, sc[1]];
-  const lH = [-8, 0], rH = [8, 0];
-
-  const lE = add(lS, dir(pose.lUA), LEN.ua), lHand = add(lE, dir(pose.lFA), LEN.fa);
-  const rE = add(rS, dir(pose.rUA), LEN.ua), rHand = add(rE, dir(pose.rFA), LEN.fa);
-  const lK = add(lH, dir(pose.lTh), LEN.th), lF = add(lK, dir(pose.lSh), LEN.sh);
-  const rK = add(rH, dir(pose.rTh), LEN.th), rF = add(rK, dir(pose.rSh), LEN.sh);
-  const head = add(neck, up, LEN.head + 5);
-
-  return { hip, neck, lS, rS, lH, rH, lE, lHand, rE, rHand, lK, lF, rK, rF, head };
-}
-
-/* ---------- Shapes: everything is built from thick lines, discs and rings ---------- */
-const seg = (pts, w) => ({ k: "seg", pts, w });
-const disc = (c, r) => ({ k: "disc", c, r });
-const ring = (c, r, w) => ({ k: "ring", c, r, w });
-
-function bodyShapes(p, pose) {
-  const shapes = [
-    seg([p.lH, p.lK, p.lF], WIDTH.leg),
-    seg([p.rH, p.rK, p.rF], WIDTH.leg),
-    seg([p.lH, p.rH], WIDTH.hips),
-    seg([p.hip, p.neck], WIDTH.torso),
-    seg([p.lS, p.rS], WIDTH.shoulders),
-    seg([p.lS, p.lE, p.lHand], WIDTH.arm),
-    seg([p.rS, p.rE, p.rHand], WIDTH.arm),
-    disc(p.head, LEN.head),
-  ];
-  if (pose.cast === "r") shapes.push(seg([p.rK, p.rF], 26)); // leg in a cast
-  if (pose.cast === "l") shapes.push(seg([p.lK, p.lF], 26));
-  return shapes;
-}
-
-// Bottom of a foot (where the floor is for a standing pose)
-const footY = (f) => f[1] + WIDTH.leg / 2;
-
-/* Mobility aids and seats. Seated / side-view poses face right; use flip to face left. */
-const PROPS = {
-  wheelchair() {
-    const hub = [-6, 18], R = 38;
-    const floor = hub[1] + R + 3.5;
-    const caster = [46, floor - 7];
-    return [
-      ring(hub, R, 7), disc(hub, 6),                   // big wheel
-      seg([[-16, 4], [34, 4]], 6),                     // seat
-      seg([[-16, 4], [-20, -48], [-34, -50]], 6),      // backrest + push handle
-      seg([[34, 4], caster], 5),                       // front frame
-      seg([[32, 50], [50, 50]], 5),                    // footrest
-      disc(caster, 7),                                 // front caster
-    ];
-  },
-  chair(p) {
-    const y = Math.max(footY(p.lF), footY(p.rF)) - 3;
-    return [
-      seg([[-18, 6], [36, 6]], 8),                     // seat
-      seg([[-18, 6], [-21, -52]], 7),                  // back
-      seg([[-16, 6], [-16, y]], 6),                    // back leg
-      seg([[32, 6], [32, y]], 6),                      // front leg
-    ];
-  },
-  cane(p) {
-    const h = p.rHand, y = footY(p.lF) - 3;
-    return [seg([[h[0] - 9, h[1] - 2], [h[0] + 2, h[1] - 2], [h[0] + 6, y]], 6)];
-  },
-  crutches(p) {
-    const y = footY(p.lF) - 3;
-    const crutch = (s, hand, side) => {
-      const top = [s[0] - side * 12, s[1] + 16]; // under the armpit
-      const t = (y - top[1]) / (hand[1] - top[1]);
-      const bottom = [top[0] + (hand[0] - top[0]) * t, y];
-      return [
-        seg([top, bottom], 6),
-        seg([[top[0] - 8, top[1]], [top[0] + 8, top[1]]], 7),     // underarm pad
-        seg([[hand[0] - 6, hand[1]], [hand[0] + 6, hand[1]]], 6), // hand grip
-      ];
-    };
-    return [...crutch(p.lS, p.lHand, 1), ...crutch(p.rS, p.rHand, -1)];
-  },
-  kneeScooter(p) {
-    const y = footY(p.lF);
-    const deck = p.rK[1] + 16;
-    const h = p.rHand;
-    return [
-      seg([[p.rF[0] - 6, deck], [p.rK[0] + 8, deck]], 8),  // knee platform
-      seg([[-12, deck], [-12, y - 14]], 6),                // post
-      seg([[-34, y - 14], [66, y - 14]], 6),               // base
-      seg([[62, y - 14], [h[0] - 2, h[1]]], 6),            // steering stem
-      seg([[h[0] - 8, h[1] - 2], [h[0] + 6, h[1] - 4]], 6), // handlebar
-      disc([-30, y - 9], 9), disc([62, y - 9], 9),         // wheels
-    ];
-  },
-  walker(p) {
-    const y = Math.max(footY(p.lF), footY(p.rF));
-    const h = p.rHand;
-    const front = [h[0] + 16, y - 8], back = [h[0] - 18, y - 8];
-    return [
-      seg([[h[0] - 8, h[1]], [h[0] + 6, h[1]]], 7),        // handle
-      seg([h, front], 6), seg([h, back], 6),               // frame
-      seg([[h[0] - 9, h[1] + 50], [h[0] + 8, h[1] + 50]], 5), // brace
-      disc(front, 8), disc(back, 8),                       // wheels
-    ];
-  },
-};
-
-/* ---------- Geometry helpers ---------- */
-// Call fn(x, y, r) for points along every shape (used for bounds and packing)
-function sample(shapes, fn) {
-  for (const s of shapes) {
-    if (s.k === "seg") {
-      for (let i = 0; i < s.pts.length - 1; i++) {
-        const [a, b] = [s.pts[i], s.pts[i + 1]];
-        const steps = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 3));
-        for (let j = 0; j <= steps; j++) {
-          fn(a[0] + ((b[0] - a[0]) * j) / steps, a[1] + ((b[1] - a[1]) * j) / steps, s.w / 2);
-        }
-      }
-    } else if (s.k === "disc") {
-      fn(s.c[0], s.c[1], s.r);
-    } else if (s.k === "ring") {
-      for (let a = 0; a < 360; a += 6) {
-        const d = dir(a);
-        fn(s.c[0] + d[0] * s.r, s.c[1] + d[1] * s.r, s.w / 2);
-      }
-    } else if (s.k === "icon") {
-      for (const q of s.pts) fn(q[0], q[1], 0.5);
-    }
-  }
-}
-
-function mapPoints(shapes, f) {
-  return shapes.map((s) => {
-    if (s.k === "seg") return { ...s, pts: s.pts.map(f) };
-    if (s.k === "icon") {
-      // Push the icon's matrix through f too (f is always a flip/shift, so this is exact)
-      const [a, b, c, d, e, g] = s.m;
-      const o = f([e, g]), ex = f([e + a, g + b]), ey = f([e + c, g + d]);
-      return { ...s, pts: s.pts.map(f), m: [ex[0] - o[0], ex[1] - o[1], ey[0] - o[0], ey[1] - o[1], o[0], o[1]] };
-    }
-    return { ...s, c: f(s.c) };
-  });
-}
-
-// Noun Project icons (icons.js): measure each once, and trace its outline so groups can pack tightly
-const ICON_H = 210; // default icon height, about the same as a drawn standing figure
+/* ---------- Icons (icons.js) ---------- */
+// Measure each icon once and trace its outline, so groups can pack tightly
 const iconCache = {};
 function iconData(name) {
   if (iconCache[name]) return iconCache[name];
@@ -191,95 +35,62 @@ function iconData(name) {
   return (iconCache[name] = { d: ICONS[name], box, pts });
 }
 
-// Build a figure's shapes, standing on y = 0 (lift raises it for jumps)
-function figureShapes(fig) {
-  let shapes;
-  if (fig.icon) {
-    const { d, box, pts } = iconData(fig.icon);
-    const s = (fig.h || ICON_H) / box.height;
-    const m = [s, 0, 0, s, -s * (box.x + box.width / 2), -s * (box.y + box.height)];
-    shapes = [{ k: "icon", d, m, pts: pts.map(([x, y]) => [m[0] * x + m[4], m[3] * y + m[5]]) }];
-  } else {
-    const pose = Object.assign({}, POSES[fig.pose], fig.tweak);
-    const p = skeleton(pose);
-    shapes = bodyShapes(p, pose);
-    if (pose.prop) shapes.push(...PROPS[pose.prop](p));
-  }
-  let floor = -Infinity;
-  sample(shapes, (x, y, r) => { floor = Math.max(floor, y + r); });
-  const sx = fig.flip ? -1 : 1;
-  return mapPoints(shapes, (q) => [sx * q[0], q[1] - floor - (fig.lift || 0)]);
+// Scale an icon to its height, centre it on x = 0 and stand its lowest point on y = 0 (the floor)
+function placeIcon(fig) {
+  const { d, box, pts } = iconData(fig.icon);
+  const s = (fig.h || ICON_H) / box.height;
+  const sx = fig.flip ? -s : s;
+  const m = [sx, 0, 0, s, -sx * (box.x + box.width / 2), -s * (box.y + box.height)];
+  return { d, m, pts: pts.map(([x, y]) => [m[0] * x + m[4], m[3] * y + m[5]]) };
 }
 
 // Horizontal extent of a figure in thin height bands, so neighbours can tuck together
-const BAND = 6;
-function profileOf(shapes) {
+function profileOf(pts) {
   const bands = new Map();
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity;
-  sample(shapes, (x, y, r) => {
-    x0 = Math.min(x0, x - r); x1 = Math.max(x1, x + r); y0 = Math.min(y0, y - r);
-    for (let b = Math.floor((y - r) / BAND); b <= Math.floor((y + r) / BAND); b++) {
-      const e = bands.get(b);
-      if (e) { e[0] = Math.min(e[0], x - r); e[1] = Math.max(e[1], x + r); }
-      else bands.set(b, [x - r, x + r]);
-    }
-  });
-  return { bands, x0, x1, y0 };
-}
-
-function drawShapes(g, shapes) {
-  for (const s of shapes) {
-    if (s.k === "seg") {
-      el("path", { class: "limb", d: "M" + s.pts.map((q) => q.join(" ")).join("L"), "stroke-width": s.w }, g);
-    } else if (s.k === "disc") {
-      el("circle", { cx: s.c[0], cy: s.c[1], r: s.r }, g);
-    } else if (s.k === "ring") {
-      el("circle", { class: "limb", cx: s.c[0], cy: s.c[1], r: s.r, "stroke-width": s.w }, g);
-    } else if (s.k === "icon") {
-      el("path", { class: "icon", d: s.d, transform: `matrix(${s.m.join(" ")})` }, g);
-    }
+  for (const [x, y] of pts) {
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y);
+    const b = Math.floor(y / BAND), e = bands.get(b);
+    if (e) { e[0] = Math.min(e[0], x); e[1] = Math.max(e[1], x); }
+    else bands.set(b, [x, x]);
   }
+  return { bands, x0, x1, y0 };
 }
 
 function renderScene(scene) {
   const svg = el("svg", { role: "img", "aria-label": scene.name, preserveAspectRatio: "xMidYMax meet" });
-  const shadows = el("g", {}, svg);
 
   // Slide each figure right up against the ones already placed (GAP apart at the closest
-  // height), so arms and props at different heights can tuck past each other.
+  // height), so arms and equipment at different heights can tuck past each other.
   const sky = new Map(); // band -> rightmost x so far
   const placed = scene.figures.map((fig) => {
-    const shapes = figureShapes(fig);
-    const prof = profileOf(shapes);
-    let x = fig.x;
-    if (x === undefined) {
-      x = sky.size ? -Infinity : 0;
-      for (const [b, [lo]] of prof.bands) {
-        if (sky.has(b)) x = Math.max(x, sky.get(b) - lo + GAP);
-      }
-      if (x === -Infinity) x = Math.max(...sky.values()) - prof.x0 + GAP;
+    const icon = placeIcon(fig);
+    const prof = profileOf(icon.pts);
+    let x = sky.size ? -Infinity : 0;
+    for (const [b, [lo]] of prof.bands) {
+      if (sky.has(b)) x = Math.max(x, sky.get(b) - lo + GAP);
     }
+    if (x === -Infinity) x = Math.max(...sky.values()) - prof.x0 + GAP;
     for (const [b, [, hi]] of prof.bands) sky.set(b, Math.max(sky.get(b) ?? -Infinity, hi + x));
-    return { shapes, prof, x };
+    return { icon, x };
   });
 
-  // Centre the group and frame it tightly so it fills the screen height
-  const x0 = Math.min(...placed.map((f) => f.prof.x0 + f.x));
-  const x1 = Math.max(...placed.map((f) => f.prof.x1 + f.x));
-  const y0 = Math.min(...placed.map((f) => f.prof.y0));
+  // Centre the group and frame it tightly: top of the tallest figure to the floor (the screen's bottom edge)
+  const profs = placed.map(({ icon, x }) => ({ ...profileOf(icon.pts), x }));
+  const x0 = Math.min(...profs.map((p) => p.x0 + p.x));
+  const x1 = Math.max(...profs.map((p) => p.x1 + p.x));
+  const y0 = Math.min(...profs.map((p) => p.y0));
   const shift = -(x0 + x1) / 2;
 
-  placed.forEach(({ shapes, prof, x }, i) => {
-    const cx = x + shift;
-    const half = (prof.x1 - prof.x0) / 2;
-    el("ellipse", { class: "floor-shadow", cx: cx + (prof.x0 + prof.x1) / 2, cy: 4, rx: Math.max(40, half * 0.9), ry: 7 }, shadows);
+  placed.forEach(({ icon, x }, i) => {
     // Outer group positions the figure; inner group animates (a CSS transform would override the position)
-    const pos = el("g", { transform: `translate(${cx} 0)` }, svg);
-    drawShapes(el("g", { class: "figure", style: `--i:${i}` }, pos), shapes);
+    const pos = el("g", { transform: `translate(${x + shift} 0)` }, svg);
+    const g = el("g", { class: "figure", style: `--i:${i}` }, pos);
+    el("path", { d: icon.d, transform: `matrix(${icon.m.join(" ")})` }, g);
   });
 
   const w = x1 - x0, h = -y0;
-  svg.setAttribute("viewBox", `${-w / 2} ${-h} ${w} ${h + 12}`);
+  svg.setAttribute("viewBox", `${-w / 2} ${-h} ${w} ${h}`);
   stage.replaceChildren(svg);
 }
 

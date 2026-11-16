@@ -2,7 +2,7 @@
 
 Website for a playful DES 225 installation: visitors are encouraged to match the silhouettes on the wall.
 
-Currently a **Coming Soon** page that cycles through silhouette scenes (solo poses and groups of 2–4) for people to match. Scenes are designed to be inclusive: some figures sit (wheelchair, chair) or use mobility aids (cane, crutches with a leg cast, knee scooter, walker), mixed in with standing poses.
+The page cycles through silhouette scenes (solo figures and small groups) for people to match. The silhouettes are Noun Project icons; see Credits.
 
 ## Controls
 
@@ -16,19 +16,19 @@ Each scene auto-advances after 30 seconds. Change `SCENE_SECONDS` at the top of 
 
 ## Editing scenes
 
-Scenes live in `scenes.js`. Each scene is a name plus a list of figures. A figure is either a Noun Project icon from `icons.js` or a drawn pose from `POSES`:
+Scenes live in `scenes.js`. Each scene is a name plus a list of 1–4 icons from `icons.js`:
 
 ```js
-{ name: "Pickup game", figures: [{ icon: "basketball" }, { pose: "wheelchairWave", flip: true }] }
+{ name: "Weekend plans", figures: [{ icon: "hiking" }, { icon: "golf", flip: true }] }
 ```
 
-Drawn poses cover the seated and mobility-aid figures, since none of the icons do. They can include a `prop` (wheelchair, chair, cane, crutches, kneeScooter, walker) and a `cast` on one leg. Figures in a group are packed as close as they can get without touching; change `GAP` in `script.js` to space them out.
+Every scene stands on the bottom edge of the screen, so set the screen so its bottom edge meets the floor. Figures in a group are packed as close as they fit; change `GAP` in `script.js` to space them out.
 
-To add another Noun Project icon, copy the `d="…"` value of the SVG's `<path>` into `icons.js` under a new name. Leave out the "Created by…" text, and add the artist to the credits below.
+To add another Noun Project icon, copy the `d="…"` value of the SVG's `<path>` into `icons.js` under a new name. Leave out the "Created by…" text, and add the artist to the credits below. After any change, bump the `?v=` number in `index.html` so browsers load the new files.
 
 ## Credits
 
-Silhouette icons by Lewen Design from Noun Project: Skateboarding, Weightlifting, Basketball, Horse Riding, Cycling, Rowing, Fencing, Wrestling, Tug of War, Billiards and Pull-up.
+Silhouette icons by Lewen Design from Noun Project: Skateboarding, Weightlifting, Basketball, Horse Riding, Golf, Hiking, Cycling, Rowing, Fencing, Wrestling, Tug of War, Billiards and Pull-up.
 
 ## Run locally
 
@@ -47,6 +47,6 @@ Click the button in the bottom-right corner or press **F**. While fullscreen, th
 - `index.html` — page markup
 - `style.css` — styles
 - `icons.js` — Noun Project silhouette icons
-- `scenes.js` — poses and scenes
-- `script.js` — draws silhouettes, scene switching, timer, fullscreen
+- `scenes.js` — scenes
+- `script.js` — draws and packs silhouettes, scene switching, timer, fullscreen
 - `assets/background.webp` — background artwork
