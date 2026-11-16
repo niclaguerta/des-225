@@ -35,12 +35,14 @@ function iconData(name) {
   return (iconCache[name] = { d: ICONS[name], box, pts });
 }
 
-// Scale an icon to its height, centre it on x = 0 and stand its lowest point on y = 0 (the floor)
+// Scale an icon to its height, centre it on x = 0 and stand it on y = 0 (the floor): its lowest
+// point, or fig.floor (a height in the icon's own units) so anything below that hangs off screen
 function placeIcon(fig) {
   const { d, box, pts } = iconData(fig.icon);
-  const s = (fig.h || ICON_H) / box.height;
+  const floor = fig.floor ?? box.y + box.height;
+  const s = (fig.h || ICON_H) / (floor - box.y);
   const sx = fig.flip ? -s : s;
-  const m = [sx, 0, 0, s, -sx * (box.x + box.width / 2), -s * (box.y + box.height)];
+  const m = [sx, 0, 0, s, -sx * (box.x + box.width / 2), -s * floor];
   return { d, m, pts: pts.map(([x, y]) => [m[0] * x + m[4], m[3] * y + m[5]]) };
 }
 
