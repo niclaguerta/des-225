@@ -22,43 +22,63 @@ function el(tag, attrs, parent) {
 }
 
 /* ---------- Icons (icons.js) ---------- */
-// Measure each icon once and trace its outline, so groups can pack tightly
+// Measure each icon once: draw it on a small hidden canvas and record, for every pixel row,
+// the leftmost and rightmost filled pixel. Groups use these spans to pack tightly.
+const RASTER = 4; // canvas pixels per icon unit
 const iconCache = {};
 function iconData(name) {
   if (iconCache[name]) return iconCache[name];
   if (!ICONS[name]) throw new Error(`No icon called "${name}" in icons.js`);
+  const d = ICONS[name];
   const svg = el("svg", { width: 0, height: 0, style: "position:absolute;visibility:hidden" }, document.body);
-  const path = el("path", { d: ICONS[name] }, svg);
-  const box = path.getBBox(), len = path.getTotalLength(), pts = [];
-  for (let t = 0; t <= len; t += 0.5) { const q = path.getPointAtLength(t); pts.push([q.x, q.y]); }
+  const box = el("path", { d }, svg).getBBox();
   svg.remove();
-  return (iconCache[name] = { d: ICONS[name], box, pts });
+
+  const w = Math.ceil(box.width * RASTER) + 2, h = Math.ceil(box.height * RASTER) + 2;
+  const ctx = Object.assign(document.createElement("canvas"), { width: w, height: h }).getContext("2d", { willReadFrequently: true });
+  ctx.setTransform(RASTER, 0, 0, RASTER, 1 - box.x * RASTER, 1 - box.y * RASTER);
+  ctx.fill(new Path2D(d));
+  const px = ctx.getImageData(0, 0, w, h).data;
+  const rows = []; // [y, xLeft, xRight] in icon units
+  for (let r = 0; r < h; r++) {
+    let lo = -1, hi = -1;
+    for (let c = 0; c < w; c++) if (px[(r * w + c) * 4 + 3] > 64) { if (lo < 0) lo = c; hi = c; }
+    if (lo >= 0) {
+      const toX = (c) => box.x + (c - 1) / RASTER;
+      rows.push([box.y + (r - 0.5) / RASTER, toX(lo), toX(hi + 1)]);
+    }
+  }
+  return (iconCache[name] = { d, box, rows });
 }
 
 // Scale an icon so its top-to-floor span is h, centre it on x = 0 and stand it on y = 0.
 // fig.floor / fig.top (in the icon's own units) move those lines in, so anything below the
 // floor or above the top goes off screen.
 function placeIcon(fig) {
-  const { d, box, pts } = iconData(fig.icon);
+  const { d, box, rows } = iconData(fig.icon);
   const floor = fig.floor ?? box.y + box.height;
   const top = fig.top ?? box.y;
   const s = (fig.h || ICON_H) / (floor - top);
   const sx = fig.flip ? -s : s;
   const m = [sx, 0, 0, s, -sx * (box.x + box.width / 2), -s * floor];
-  return { d, m, pts: pts.map(([x, y]) => [m[0] * x + m[4], m[3] * y + m[5]]) };
+  const spans = rows.map(([y, a, b]) => {
+    const xa = sx * a + m[4], xb = sx * b + m[4];
+    return [s * y + m[5], Math.min(xa, xb), Math.max(xa, xb)];
+  });
+  return { d, m, spans };
 }
 
 // Horizontal extent of a figure in thin height bands, so neighbours can tuck together
-function profileOf(pts) {
+function profileOf(spans) {
   const bands = new Map();
-  let x0 = Infinity, x1 = -Infinity, y0 = Infinity;
-  for (const [x, y] of pts) {
-    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y);
-    const b = Math.floor(y / BAND), e = bands.get(b);
-    if (e) { e[0] = Math.min(e[0], x); e[1] = Math.max(e[1], x); }
-    else bands.set(b, [x, x]);
+  let x0 = Infinity, x1 = -Infinity;
+  for (const [y, a, b] of spans) {
+    x0 = Math.min(x0, a); x1 = Math.max(x1, b);
+    const k = Math.floor(y / BAND), e = bands.get(k);
+    if (e) { e[0] = Math.min(e[0], a); e[1] = Math.max(e[1], b); }
+    else bands.set(k, [a, b]);
   }
-  return { bands, x0, x1, y0 };
+  return { bands, x0, x1 };
 }
 
 function renderScene(scene) {
@@ -69,20 +89,19 @@ function renderScene(scene) {
   const sky = new Map(); // band -> rightmost x so far
   const placed = scene.figures.map((fig) => {
     const icon = placeIcon(fig);
-    const prof = profileOf(icon.pts);
+    const prof = profileOf(icon.spans);
     let x = sky.size ? -Infinity : 0;
     for (const [b, [lo]] of prof.bands) {
       if (sky.has(b)) x = Math.max(x, sky.get(b) - lo + GAP);
     }
     if (x === -Infinity) x = Math.max(...sky.values()) - prof.x0 + GAP;
     for (const [b, [, hi]] of prof.bands) sky.set(b, Math.max(sky.get(b) ?? -Infinity, hi + x));
-    return { icon, x };
+    return { icon, prof, x };
   });
 
   // Centre the group and frame it tightly: top of the tallest figure to the floor (the screen's bottom edge)
-  const profs = placed.map(({ icon, x }) => ({ ...profileOf(icon.pts), x }));
-  const x0 = Math.min(...profs.map((p) => p.x0 + p.x));
-  const x1 = Math.max(...profs.map((p) => p.x1 + p.x));
+  const x0 = Math.min(...placed.map((p) => p.prof.x0 + p.x));
+  const x1 = Math.max(...placed.map((p) => p.prof.x1 + p.x));
   const y0 = -Math.max(...scene.figures.map((f) => f.h || ICON_H));
   const shift = -(x0 + x1) / 2;
 
@@ -190,3 +209,10 @@ if (!(root.requestFullscreen || root.webkitRequestFullscreen)) btn.hidden = true
 /* ---------- Start ---------- */
 goTo(0);
 requestAnimationFrame(tick);
+// Measure the remaining icons now, a few at a time, so the first visit to each scene is instant
+const toMeasure = Object.keys(ICONS);
+(function warm() {
+  const until = performance.now() + 8;
+  while (toMeasure.length && performance.now() < until) iconData(toMeasure.pop());
+  if (toMeasure.length) setTimeout(warm, 0);
+})();
