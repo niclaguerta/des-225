@@ -5,6 +5,7 @@
     h:     height (optional; default 210). Figures in one scene share the same floor.
     floor: where the floor is, in the icon's own units (0 = top of the original icon, about 95 =
            bottom). Use it to stand a figure on the bottom edge and let the rest go off screen.
+    top:   the same for the top edge: anything above it (like a fishing rod) goes off screen.
   Figures in a group are packed side by side, as close as they fit.
 */
 
@@ -22,6 +23,9 @@ const SCENES = [
   { name: "Wrestle",        figures: [{ icon: "wrestling" }] },
   { name: "Tug of war",     figures: [{ icon: "tugOfWar" }] },
   { name: "Corner pocket",  figures: [{ icon: "billiards" }] },
+  { name: "Gone fishing",   figures: [{ icon: "fishing", top: 32 }] },
+  { name: "Hydrate",        figures: [{ icon: "drinking" }] },
+  { name: "Walkies",        figures: [{ icon: "dogWalk" }] },
   { name: "Gym buddies", figures: [
       { icon: "weightlifting" },
       { icon: "pullUp" },
@@ -29,6 +33,10 @@ const SCENES = [
   { name: "Weekend plans", figures: [
       { icon: "hiking" },
       { icon: "golf", flip: true },
+  ]},
+  { name: "Park day", figures: [
+      { icon: "drinking" },
+      { icon: "dogWalk" },
   ]},
   { name: "Street crew", figures: [
       { icon: "skateboarding" },

@@ -30,6 +30,8 @@ To add another Noun Project icon, copy the `d="…"` value of the SVG's `<path>`
 
 Silhouette icons by Lewen Design from Noun Project: Skateboarding, Weightlifting, Basketball, Horse Riding, Golf, Hiking, Cycling, Rowing, Fencing, Wrestling, Tug of War, Billiards and Pull-up.
 
+Silhouette icons by Toni Olm from Noun Project: Angler, Drinking Bottle and Taking the Dog for a Walk.
+
 ## Run locally
 
 Open `index.html` in a browser, or serve the folder:

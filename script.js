@@ -35,12 +35,14 @@ function iconData(name) {
   return (iconCache[name] = { d: ICONS[name], box, pts });
 }
 
-// Scale an icon to its height, centre it on x = 0 and stand it on y = 0 (the floor): its lowest
-// point, or fig.floor (a height in the icon's own units) so anything below that hangs off screen
+// Scale an icon so its top-to-floor span is h, centre it on x = 0 and stand it on y = 0.
+// fig.floor / fig.top (in the icon's own units) move those lines in, so anything below the
+// floor or above the top goes off screen.
 function placeIcon(fig) {
   const { d, box, pts } = iconData(fig.icon);
   const floor = fig.floor ?? box.y + box.height;
-  const s = (fig.h || ICON_H) / (floor - box.y);
+  const top = fig.top ?? box.y;
+  const s = (fig.h || ICON_H) / (floor - top);
   const sx = fig.flip ? -s : s;
   const m = [sx, 0, 0, s, -sx * (box.x + box.width / 2), -s * floor];
   return { d, m, pts: pts.map(([x, y]) => [m[0] * x + m[4], m[3] * y + m[5]]) };
@@ -81,7 +83,7 @@ function renderScene(scene) {
   const profs = placed.map(({ icon, x }) => ({ ...profileOf(icon.pts), x }));
   const x0 = Math.min(...profs.map((p) => p.x0 + p.x));
   const x1 = Math.max(...profs.map((p) => p.x1 + p.x));
-  const y0 = Math.min(...profs.map((p) => p.y0));
+  const y0 = -Math.max(...scene.figures.map((f) => f.h || ICON_H));
   const shift = -(x0 + x1) / 2;
 
   placed.forEach(({ icon, x }, i) => {
