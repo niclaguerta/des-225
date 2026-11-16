@@ -9,7 +9,7 @@
 html, body { height: 100%; }
 
 body {
-  background: #ffd61f url("assets/background.webp") center / cover no-repeat;
+  background: #ffd61f url("assets/background.webp?v=2") center / cover no-repeat;
   color: var(--ink);
   font-family: "Rubik", system-ui, sans-serif;
   overflow: hidden;
