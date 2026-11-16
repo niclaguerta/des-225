@@ -1,7 +1,7 @@
 /* ============================================================
    Scenes: show silhouettes, switch with ← →, auto-advance timer
    ============================================================ */
-const SCENE_SECONDS = 30;
+const SCENE_SECONDS = 20;
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const GAP = 12;     // space between neighbouring figures in a group (0 = touching)
