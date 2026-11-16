@@ -210,7 +210,7 @@ if (!(root.requestFullscreen || root.webkitRequestFullscreen)) btn.hidden = true
 
 /* ---------- Line boil ---------- */
 // Step through a few noise patterns, like redrawing the frame (skipped if the viewer prefers less motion)
-const BOIL_FPS = 10;
+const BOIL_FPS = 5; // redraws per second
 const BOIL_SEEDS = [1, 2, 3, 4];
 if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
   const noise = document.querySelectorAll(".boil-noise");
