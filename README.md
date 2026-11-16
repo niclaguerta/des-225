@@ -16,13 +16,19 @@ Each scene auto-advances after 30 seconds. Change `SCENE_SECONDS` at the top of 
 
 ## Editing scenes
 
-Scenes live in `scenes.js`. Each scene is a name plus a list of figures that use a pose from `POSES`. Poses can include a `prop` (wheelchair, chair, cane, crutches, kneeScooter, walker) and a `cast` on one leg. Figures in a group are packed as close as they can get without touching; change `GAP` in `script.js` to space them out. You can also use an image instead of a drawn pose, for example an SVG downloaded from the Noun Project:
+Scenes live in `scenes.js`. Each scene is a name plus a list of figures. A figure is either a Noun Project icon from `icons.js` or a drawn pose from `POSES`:
 
 ```js
-{ name: "Ballerina", figures: [{ src: "assets/silhouettes/ballerina.svg", h: 220 }] }
+{ name: "Pickup game", figures: [{ icon: "basketball" }, { pose: "wheelchairWave", flip: true }] }
 ```
 
-Remember to credit Noun Project icons as their license requires.
+Drawn poses cover the seated and mobility-aid figures, since none of the icons do. They can include a `prop` (wheelchair, chair, cane, crutches, kneeScooter, walker) and a `cast` on one leg. Figures in a group are packed as close as they can get without touching; change `GAP` in `script.js` to space them out.
+
+To add another Noun Project icon, copy the `d="…"` value of the SVG's `<path>` into `icons.js` under a new name. Leave out the "Created by…" text, and add the artist to the credits below.
+
+## Credits
+
+Silhouette icons by Lewen Design from Noun Project: Skateboarding, Weightlifting, Basketball, Horse Riding, Cycling, Rowing, Fencing, Wrestling, Tug of War, Billiards and Pull-up.
 
 ## Run locally
 
@@ -40,6 +46,7 @@ Click the button in the bottom-right corner or press **F**. While fullscreen, th
 
 - `index.html` — page markup
 - `style.css` — styles
+- `icons.js` — Noun Project silhouette icons
 - `scenes.js` — poses and scenes
 - `script.js` — draws silhouettes, scene switching, timer, fullscreen
 - `assets/background.webp` — background artwork

@@ -158,8 +158,8 @@ function sample(shapes, fn) {
         const d = dir(a);
         fn(s.c[0] + d[0] * s.r, s.c[1] + d[1] * s.r, s.w / 2);
       }
-    } else if (s.k === "image") {
-      for (let y = s.y; y <= s.y + s.h; y += 3) fn(s.x + s.w / 2, y, s.w / 2);
+    } else if (s.k === "icon") {
+      for (const q of s.pts) fn(q[0], q[1], 0.5);
     }
   }
 }
@@ -167,20 +167,38 @@ function sample(shapes, fn) {
 function mapPoints(shapes, f) {
   return shapes.map((s) => {
     if (s.k === "seg") return { ...s, pts: s.pts.map(f) };
-    if (s.k === "image") {
-      const [x, y] = f([s.x, s.y]), [x2] = f([s.x + s.w, s.y]);
-      return { ...s, x: Math.min(x, x2), y };
+    if (s.k === "icon") {
+      // Push the icon's matrix through f too (f is always a flip/shift, so this is exact)
+      const [a, b, c, d, e, g] = s.m;
+      const o = f([e, g]), ex = f([e + a, g + b]), ey = f([e + c, g + d]);
+      return { ...s, pts: s.pts.map(f), m: [ex[0] - o[0], ex[1] - o[1], ey[0] - o[0], ey[1] - o[1], o[0], o[1]] };
     }
     return { ...s, c: f(s.c) };
   });
 }
 
+// Noun Project icons (icons.js): measure each once, and trace its outline so groups can pack tightly
+const ICON_H = 210; // default icon height, about the same as a drawn standing figure
+const iconCache = {};
+function iconData(name) {
+  if (iconCache[name]) return iconCache[name];
+  if (!ICONS[name]) throw new Error(`No icon called "${name}" in icons.js`);
+  const svg = el("svg", { width: 0, height: 0, style: "position:absolute;visibility:hidden" }, document.body);
+  const path = el("path", { d: ICONS[name] }, svg);
+  const box = path.getBBox(), len = path.getTotalLength(), pts = [];
+  for (let t = 0; t <= len; t += 0.5) { const q = path.getPointAtLength(t); pts.push([q.x, q.y]); }
+  svg.remove();
+  return (iconCache[name] = { d: ICONS[name], box, pts });
+}
+
 // Build a figure's shapes, standing on y = 0 (lift raises it for jumps)
 function figureShapes(fig) {
   let shapes;
-  if (fig.src) {
-    const h = fig.h || 200, w = fig.w || h;
-    shapes = [{ k: "image", href: fig.src, x: -w / 2, y: -h, w, h }];
+  if (fig.icon) {
+    const { d, box, pts } = iconData(fig.icon);
+    const s = (fig.h || ICON_H) / box.height;
+    const m = [s, 0, 0, s, -s * (box.x + box.width / 2), -s * (box.y + box.height)];
+    shapes = [{ k: "icon", d, m, pts: pts.map(([x, y]) => [m[0] * x + m[4], m[3] * y + m[5]]) }];
   } else {
     const pose = Object.assign({}, POSES[fig.pose], fig.tweak);
     const p = skeleton(pose);
@@ -217,8 +235,8 @@ function drawShapes(g, shapes) {
       el("circle", { cx: s.c[0], cy: s.c[1], r: s.r }, g);
     } else if (s.k === "ring") {
       el("circle", { class: "limb", cx: s.c[0], cy: s.c[1], r: s.r, "stroke-width": s.w }, g);
-    } else if (s.k === "image") {
-      el("image", { href: s.href, x: s.x, y: s.y, width: s.w, height: s.h }, g);
+    } else if (s.k === "icon") {
+      el("path", { class: "icon", d: s.d, transform: `matrix(${s.m.join(" ")})` }, g);
     }
   }
 }

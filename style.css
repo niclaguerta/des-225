@@ -46,6 +46,7 @@ body {
   animation-delay: calc(var(--i) * 110ms);
 }
 .figure .limb { fill: none; }
+.figure .icon { stroke: none; }
 
 .floor-shadow { fill: var(--ink); opacity: 0.18; }
 

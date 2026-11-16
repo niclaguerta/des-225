@@ -13,8 +13,8 @@
     flip:  mirror the pose left/right
     lift:  raise the figure off the floor (for jumps)
     tweak: override any angle for this one figure, e.g. { lean: -12 }
-    src:   use an image file instead of a drawn pose, e.g. "assets/silhouettes/dancer.svg"
-           (pair with h: height in the same units; a standing figure is about 200 tall)
+    icon:  use a Noun Project icon from icons.js instead of a drawn pose, e.g. "basketball"
+    h:     an icon's height (default 210, about the same as a drawn standing figure)
 */
 
 const POSES = {
@@ -48,67 +48,41 @@ const POSES = {
   walker:      { prop: "walker", lean: 10, lUA: 30, lFA: 40, rUA: 30, rFA: 40, lTh: -6, lSh: -4, rTh: 10, rSh: 6 },
 };
 
+// Noun Project icons (icons.js) plus the drawn seated and mobility-aid figures, which have no icon match
 const SCENES = [
-  { name: "Reach for the sky", figures: [{ pose: "armsUp" }] },
-  { name: "Wheelie wave",      figures: [{ pose: "wheelchairWave" }] },
-  { name: "Superstar",         figures: [{ pose: "star" }] },
-  { name: "Take a seat",       figures: [{ pose: "sitChairStar" }] },
-  { name: "Flamingo",          figures: [{ pose: "flamingo" }] },
-  { name: "Cane & wave",       figures: [{ pose: "caneWave" }] },
-  { name: "Scoot!",            figures: [{ pose: "kneeScooter" }] },
-  { name: "Show your muscles", figures: [{ pose: "strong" }] },
-  { name: "Crutch champ",      figures: [{ pose: "crutches" }] },
-  { name: "High five", figures: [
-      { pose: "wave", x: -50 },
-      { pose: "wave", x: 50, flip: true },
-  ]},
-  { name: "Hello, neighbour", figures: [
-      { pose: "wheelchairWave" },
-      { pose: "wave", flip: true },
-  ]},
-  { name: "Mirror, mirror", figures: [
-      { pose: "point" },
-      { pose: "point", flip: true },
-  ]},
-  { name: "Teapot & friend", figures: [
-      { pose: "teapot" },
-      { pose: "sitChair", flip: true },
-  ]},
-  { name: "Back to back", figures: [
-      { pose: "lunge", flip: true },
-      { pose: "lunge" },
-  ]},
-  { name: "Human pyramid", figures: [
-      { pose: "tilt", flip: true },
+  { name: "Skate",          figures: [{ icon: "skateboarding" }] },
+  { name: "Wheelie wave",   figures: [{ pose: "wheelchairWave" }] },
+  { name: "Lift",           figures: [{ icon: "weightlifting" }] },
+  { name: "Hoops",          figures: [{ icon: "basketball" }] },
+  { name: "Cane & wave",    figures: [{ pose: "caneWave" }] },
+  { name: "Saddle up",      figures: [{ icon: "horseRiding" }] },
+  { name: "Pedal",          figures: [{ icon: "cycling" }] },
+  { name: "Scoot!",         figures: [{ pose: "kneeScooter" }] },
+  { name: "Row, row, row",  figures: [{ icon: "rowing" }] },
+  { name: "Pull-up",        figures: [{ icon: "pullUp" }] },
+  { name: "Crutch champ",   figures: [{ pose: "crutches" }] },
+  { name: "En garde",       figures: [{ icon: "fencing" }] },
+  { name: "Take a seat",    figures: [{ pose: "sitChairStar" }] },
+  { name: "Wrestle",        figures: [{ icon: "wrestling" }] },
+  { name: "Tug of war",     figures: [{ icon: "tugOfWar" }] },
+  { name: "Corner pocket",  figures: [{ icon: "billiards" }] },
+  { name: "Gym buddies", figures: [
+      { icon: "weightlifting" },
       { pose: "wheelchairUp" },
-      { pose: "tilt" },
+      { icon: "pullUp" },
   ]},
-  { name: "Jump squad", figures: [
-      { pose: "star", lift: 30 },
-      { pose: "squat" },
-      { pose: "star", lift: 30 },
+  { name: "Pickup game", figures: [
+      { icon: "basketball" },
+      { pose: "wheelchairWave", flip: true },
+  ]},
+  { name: "Street crew", figures: [
+      { icon: "skateboarding" },
+      { pose: "caneWave" },
+      { icon: "cycling", flip: true },
   ]},
   { name: "Walk this way", figures: [
       { pose: "walker" },
       { pose: "cane" },
       { pose: "kneeScooter" },
-  ]},
-  { name: "Chorus line", figures: [
-      { pose: "flamingo" },
-      { pose: "crutches" },
-      { pose: "flamingo", flip: true },
-      { pose: "sitChairStar" },
-  ]},
-  { name: "The wave", figures: [
-      { pose: "squat" },
-      { pose: "sitChair" },
-      { pose: "wave" },
-      { pose: "armsUp" },
-  ]},
-  { name: "Dance party", figures: [
-      { pose: "dab" },
-      { pose: "wheelchairWave" },
-      { pose: "star", lift: 20 },
-      { pose: "caneWave", flip: true },
   ]},
 ];
