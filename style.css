@@ -60,10 +60,10 @@ body {
   to   { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-/* ---------- Timer (floats over the stage, top-right) ---------- */
+/* ---------- Timer (floats over the stage, top-left) ---------- */
 .bottom {
   position: fixed;
-  right: 20px;
+  left: 20px;
   top: 20px;
   z-index: 1;
 }
