@@ -59,6 +59,24 @@ Open `index.html` in a browser, or serve the folder:
 python3 -m http.server 8000
 ```
 
+## Email a photo
+
+In the gallery's quick view, **Email** lets a visitor type their address and get the photo emailed to them. The email is sent by a small free Google Apps Script running on a Gmail account you set up for the exhibit. Addresses aren't saved anywhere, and the box is cleared after each send so the next visitor can't see it. Gmail allows about 100 of these emails a day.
+
+The Email button stays hidden until the script is set up:
+
+1. Make a new Gmail account just for the exhibit (visitors will see it as the sender).
+2. Signed in as that account, go to [script.google.com](https://script.google.com) and click **New project**.
+3. Delete the starter code, paste in everything from `email/Code.gs`, give the project a name, and click Save.
+4. Click **Deploy → New deployment**. Click the gear next to "Select type" and choose **Web app**. Set **Execute as: Me** and **Who has access: Anyone**, then click **Deploy**.
+5. Click **Authorize access** and pick the exhibit account. Google will say it "hasn't verified this app" because it's your own new script: click **Advanced → Go to (your project name) (unsafe) → Allow**.
+6. Copy the **Web app URL** (it ends in `/exec`). Opening it in a browser should show `"ready":true`.
+7. Paste that URL between the quotes of `EMAIL_URL` in `gallery.html`, then commit and push.
+
+To change the email's wording, edit `SENDER_NAME`, `SUBJECT` and `MESSAGE` at the top of the script. After any change to the script, click **Deploy → Manage deployments → ✏️ → Version: New version → Deploy**; the URL stays the same.
+
+`EMAIL_KEY` must be the same in `email/Code.gs` and `gallery.html`. It keeps casual visitors to the script's address from sending through it, but anyone who reads the site's code can find it, so the daily Gmail limit is the real cap.
+
 ## Auto-update
 
 Once a minute, the installation checks whether a newer version is live (a higher `?v=` number in `index.html`). If there is one, it reloads itself at the next scene change and carries on from there, so a laptop left running always ends up on the latest version. This is why it matters to bump `?v=` with every change.
@@ -77,5 +95,6 @@ Click the button in the bottom-right corner or press **F**. While fullscreen, th
 - `scenes.js` — scenes
 - `script.js` — draws and packs silhouettes, scene switching, timer, webcam photo, fullscreen
 - `photos-db.js` — saves photos in the browser (shared with the gallery)
-- `gallery.html` — view, download and delete saved photos
+- `gallery.html` — view, share, email, download and delete saved photos
+- `email/Code.gs` — Google Apps Script that sends photo emails (see Email a photo)
 - `assets/background.webp` — background artwork

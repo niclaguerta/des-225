@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Rubik:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    :root { --ink: #2a1033; --cream: #fff8e7; --green: #1fb36b; --yellow: #ffd61f; }
+    :root { --ink: #2a1033; --cream: #fff8e7; --pink: #ff5a8a; --yellow: #ffd61f; }
     * { box-sizing: border-box; margin: 0; }
     body {
       background: var(--yellow);
@@ -46,9 +46,9 @@
     }
     button:hover, .btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
     button:active, .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
-    button:focus-visible, .btn:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+    button:focus-visible, .btn:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
     button:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: 4px 4px 0 var(--ink); }
-    .primary { background: var(--green); }
+    .primary { background: var(--pink); }
     .small { padding: 6px 12px; font-size: 0.9rem; box-shadow: 3px 3px 0 var(--ink); }
 
     .grid {
@@ -63,7 +63,7 @@
       padding: 10px 10px 12px;
     }
     .thumb { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
-    .thumb:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+    .thumb:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
     .card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--ink); transition: filter 0.15s; }
     .thumb:hover img { filter: brightness(1.08); }
 
@@ -114,6 +114,25 @@
     }
     .close-btn { position: absolute; top: clamp(16px, 3vw, 32px); right: clamp(16px, 3vw, 32px); }
     @keyframes pop-in { from { transform: scale(0.92); opacity: 0; } }
+
+    /* Email form in the quick view */
+    .email-form { margin-top: 14px; }
+    .email-form label { display: block; font-weight: 700; margin-bottom: 6px; }
+    .email-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .email-row input {
+      flex: 1;
+      min-width: 220px;
+      font: inherit;
+      font-size: 1.1rem;
+      color: var(--ink);
+      background: #fff;
+      border: 3px solid var(--ink);
+      border-radius: 999px;
+      padding: 8px 16px;
+    }
+    .email-row input:focus-visible { outline: 3px solid var(--pink); outline-offset: 2px; }
+    .email-status { min-height: 1.4em; margin-top: 8px; font-weight: 700; }
+    .email-status.error { color: #b3123f; }
     @media (max-width: 600px) {
       .viewer[open] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; }
       .viewer figure { grid-column: 1 / -1; grid-row: 1; }
@@ -146,11 +165,22 @@
       <img id="viewImg" alt="">
       <figcaption class="meta"><strong id="viewScene"></strong><span id="viewWhen"></span></figcaption>
       <div class="card-actions">
+        <button class="small primary" id="viewEmail" type="button" hidden>Email</button>
         <button class="small primary" id="viewShare" type="button">Share</button>
         <button class="small" id="viewSave" type="button">Download</button>
         <button class="small" id="viewDelete" type="button">Delete</button>
         <span class="view-pos" id="viewPos" style="margin-left:auto;align-self:center"></span>
       </div>
+      <!-- Visitor types their address here. autocomplete is off so the next visitor never sees it suggested. -->
+      <form class="email-form" id="emailForm" hidden>
+        <label for="emailTo">Email this photo to</label>
+        <div class="email-row">
+          <input id="emailTo" type="email" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="name@example.com">
+          <button class="small primary" id="emailSend" type="submit">Send</button>
+          <button class="small" id="emailCancel" type="button">Cancel</button>
+        </div>
+        <p class="email-status" id="emailStatus" role="status"></p>
+      </form>
     </figure>
     <button class="round next" id="viewNext" type="button" aria-label="Next photo">›</button>
     <button class="round close-btn" id="viewClose" type="button" aria-label="Close">×</button>
@@ -267,7 +297,7 @@
 
     function step(by) {
       const i = photos.findIndex((p) => p.id === viewingId) + by;
-      if (i >= 0 && i < photos.length) { viewingId = photos[i].id; refreshViewer(); }
+      if (i >= 0 && i < photos.length) { viewingId = photos[i].id; closeEmailForm(); refreshViewer(); }
     }
 
     document.getElementById("viewPrev").onclick = () => step(-1);
@@ -291,12 +321,79 @@
       render();
     };
     viewer.addEventListener("keydown", (e) => {
+      if (e.target.matches("input")) return; // arrow keys move the cursor while typing an address
       if (e.key === "ArrowLeft") step(-1);
       else if (e.key === "ArrowRight") step(1);
     });
     // A click on the dark area around the photo closes the quick view
     viewer.addEventListener("click", (e) => { if (e.target === viewer) viewer.close(); });
-    viewer.addEventListener("close", () => { viewingId = null; });
+    viewer.addEventListener("close", () => { viewingId = null; closeEmailForm(); });
+
+    /* ---------- Email a photo ----------
+       Sends through the Google Apps Script in email/Code.gs (setup: README, "Email a photo").
+       Paste the web app address it gives you into EMAIL_URL. Until then the Email button stays hidden. */
+    const EMAIL_URL = "";
+    const EMAIL_KEY = "1Lfv3rP-ozw2W8psVdLVJoOJ"; // must match EMAIL_KEY in email/Code.gs
+
+    const emailBtn = document.getElementById("viewEmail");
+    const emailForm = document.getElementById("emailForm");
+    const emailTo = document.getElementById("emailTo");
+    const emailSend = document.getElementById("emailSend");
+    const emailStatus = document.getElementById("emailStatus");
+    let hideFormTimer;
+    emailBtn.hidden = !EMAIL_URL;
+
+    function setStatus(text, isError) {
+      emailStatus.textContent = text;
+      emailStatus.classList.toggle("error", !!isError);
+    }
+    function closeEmailForm() {
+      clearTimeout(hideFormTimer);
+      emailForm.hidden = true;
+      emailTo.value = "";
+      setStatus("");
+      emailSend.disabled = false;
+    }
+    emailBtn.onclick = () => {
+      closeEmailForm();
+      emailForm.hidden = false;
+      emailTo.focus();
+    };
+    document.getElementById("emailCancel").onclick = closeEmailForm;
+
+    const blobToBase64 = (blob) => new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result).split(",")[1]);
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(blob);
+    });
+
+    emailForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const p = photos.find((x) => x.id === viewingId);
+      const to = emailTo.value.trim();
+      if (!p || !to) return;
+      emailSend.disabled = true;
+      setStatus("Sending…");
+      try {
+        // text/plain keeps this a "simple" request, which Apps Script accepts from another site
+        const res = await fetch(EMAIL_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ key: EMAIL_KEY, email: to, photo: await blobToBase64(p.blob), filename: fileName(p) }),
+        });
+        const out = await res.json();
+        if (!out.ok) throw new Error(out.error || "Couldn't send.");
+        emailTo.value = ""; // don't leave the address on screen for the next visitor
+        setStatus(`Sent! Check your inbox (and spam folder).`);
+        hideFormTimer = setTimeout(closeEmailForm, 4000);
+      } catch (err) {
+        const offline = err instanceof TypeError; // fetch couldn't reach the server
+        setStatus(offline ? "Couldn't reach the email service. Check the internet connection and try again." : err.message, true);
+      } finally {
+        emailSend.disabled = false;
+      }
+    });
 
     downloadAllBtn.onclick = async () => {
       downloadAllBtn.disabled = true;
