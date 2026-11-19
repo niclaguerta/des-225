@@ -16,9 +16,16 @@ Each scene lasts 20 seconds. Change `SCENE_SECONDS` at the top of `script.js` to
 
 ## Webcam photo
 
-The last 5 seconds of each scene count down on screen with a camera badge, and a live, mirrored camera preview appears in the top-right corner so people can line up. Then the webcam takes a photo (mirrored like a selfie). The photo shows for 4 seconds, then the next scene starts. Change `COUNTDOWN` and `PHOTO_SECONDS` at the top of `script.js` to adjust.
+The last 5 seconds of each scene count down on screen with a camera badge, and a live, mirrored camera preview appears in the top-right corner so people can line up. Then the webcam takes a photo (mirrored like a selfie). The photo shows for 6 seconds, then the next scene starts. Change `COUNTDOWN` and `PHOTO_SECONDS` at the top of `script.js` to adjust.
 
-It uses the browser's built-in camera API, so no extra library is needed. It always picks the laptop's built-in camera (FaceTime HD) over an iPhone or other camera, if one is there. The browser asks for camera permission the first time; click Allow. The camera only works on `https://` pages or `localhost`, which includes the GitHub Pages site. If permission is refused or there is no camera, scenes advance without photos. Photos are not saved or uploaded anywhere yet.
+It uses the browser's built-in camera API, so no extra library is needed. It always picks the laptop's built-in camera (FaceTime HD) over an iPhone or other camera, if one is there. The browser asks for camera permission the first time; click Allow. The camera only works on `https://` pages or `localhost`, which includes the GitHub Pages site. If permission is refused or there is no camera, scenes advance without photos. ## Photo gallery
+
+Every photo is saved in the browser on the laptop running the installation. To see them, open `gallery.html` (https://niclaguerta.github.io/des-225/gallery.html) **on the same laptop, in the same browser**. From there you can download one photo or all of them as a .zip, or delete them.
+
+- Photos never leave the laptop; nothing is uploaded.
+- They stay until you delete them or clear the browser's site data, so download a .zip after the exhibition.
+- Use Chrome for the installation. Safari can clear a site's saved data after a week of not visiting it.
+- The gallery updates by itself if it's open in another tab while the installation runs.
 
 ## Editing scenes
 
@@ -58,5 +65,7 @@ Click the button in the bottom-right corner or press **F**. While fullscreen, th
 - `style.css` — styles
 - `icons.js` — Noun Project silhouette icons
 - `scenes.js` — scenes
-- `script.js` — draws and packs silhouettes, scene switching, timer, fullscreen
+- `script.js` — draws and packs silhouettes, scene switching, timer, webcam photo, fullscreen
+- `photos-db.js` — saves photos in the browser (shared with the gallery)
+- `gallery.html` — view, download and delete saved photos
 - `assets/background.webp` — background artwork

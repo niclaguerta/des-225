@@ -3,7 +3,7 @@
    ============================================================ */
 const SCENE_SECONDS = 20;
 const COUNTDOWN = 5;      // the last seconds of each scene count down to a webcam photo
-const PHOTO_SECONDS = 4;  // how long the photo stays up before the next scene
+const PHOTO_SECONDS = 6;  // how long the photo stays up before the next scene
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const GAP = 12;     // space between neighbouring figures in a group (0 = touching)
@@ -221,6 +221,11 @@ function takePhoto() {
   ctx.drawImage(cam, 0, 0, w, h);
   photoEl.src = canvas.toDataURL("image/jpeg", 0.9);
   photoEl.hidden = false;
+  // Keep a copy for gallery.html
+  const scene = SCENES[current].name;
+  canvas.toBlob((blob) => {
+    if (blob) PhotoDB.add({ time: Date.now(), scene, blob }).catch((err) => console.warn("Couldn't save photo:", err));
+  }, "image/jpeg", 0.9);
   flashEl.classList.remove("go");
   void flashEl.offsetWidth;
   flashEl.classList.add("go");
