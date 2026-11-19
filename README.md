@@ -22,6 +22,8 @@ It uses the browser's built-in camera API, so no extra library is needed. It alw
 
 Every photo is saved in the browser on the laptop running the installation. To see them, open `gallery.html` (https://niclaguerta.github.io/des-225/gallery.html) **on the same laptop, in the same browser**. Click a photo to see it larger (← → step through, Esc or a click outside closes). From there you can download one photo or all of them as a .zip, or delete them.
 
+**Share** opens the Mac's share menu to send a photo by AirDrop (straight to a visitor's iPhone nearby, no contact details needed), Messages or Mail. Messages and Mail send from your own number and email. If the browser can't open the share menu, Share downloads the photo instead so you can attach it by hand.
+
 - Photos never leave the laptop; nothing is uploaded.
 - They stay until you delete them or clear the browser's site data, so download a .zip after the exhibition.
 - Use Chrome for the installation. Safari can clear a site's saved data after a week of not visiting it.

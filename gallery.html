@@ -123,7 +123,7 @@
     @media (prefers-reduced-motion: reduce) { .viewer figure { animation: none; } }
     .meta { display: flex; justify-content: space-between; gap: 8px; margin: 10px 2px; font-size: 0.95rem; }
     .meta strong { font-weight: 700; }
-    .card-actions { display: flex; gap: 10px; }
+    .card-actions { display: flex; flex-wrap: wrap; gap: 10px; }
     .empty { font-size: 1.2rem; padding: 48px 0; }
   </style>
 </head>
@@ -146,6 +146,7 @@
       <img id="viewImg" alt="">
       <figcaption class="meta"><strong id="viewScene"></strong><span id="viewWhen"></span></figcaption>
       <div class="card-actions">
+        <button class="small primary" id="viewShare" type="button">Share</button>
         <button class="small" id="viewSave" type="button">Download</button>
         <button class="small" id="viewDelete" type="button">Delete</button>
         <span class="view-pos" id="viewPos" style="margin-left:auto;align-self:center"></span>
@@ -203,6 +204,7 @@
           <button class="thumb" type="button" aria-label="View larger"><img alt=""></button>
           <figcaption class="meta"><strong></strong><span></span></figcaption>
           <div class="card-actions">
+            <button class="small primary" type="button" data-act="share">Share</button>
             <button class="small" type="button" data-act="save">Download</button>
             <button class="small" type="button" data-act="delete">Delete</button>
           </div>`;
@@ -211,10 +213,26 @@
         card.querySelector("strong").textContent = p.scene || "Photo";
         card.querySelector(".meta span").textContent = when;
         card.querySelector(".thumb").onclick = () => openViewer(p.id);
+        card.querySelector('[data-act="share"]').onclick = () => sharePhoto(p);
         card.querySelector('[data-act="save"]').onclick = () => download(p.blob, fileName(p));
         card.querySelector('[data-act="delete"]').onclick = () => deletePhoto(p);
         return card;
       }));
+    }
+
+    // Opens the Mac's share menu (AirDrop, Messages, Mail…). If this browser can't share
+    // files, the photo downloads instead so it can be attached by hand.
+    async function sharePhoto(p) {
+      const file = new File([p.blob], fileName(p), { type: "image/jpeg" });
+      if (navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: "Your silhouette photo" });
+        } catch (err) {
+          if (err.name !== "AbortError") { console.warn("Share failed, downloading instead:", err); download(p.blob, fileName(p)); }
+        }
+      } else {
+        download(p.blob, fileName(p));
+      }
     }
 
     async function deletePhoto(p) {
@@ -255,6 +273,10 @@
     document.getElementById("viewPrev").onclick = () => step(-1);
     document.getElementById("viewNext").onclick = () => step(1);
     document.getElementById("viewClose").onclick = () => viewer.close();
+    document.getElementById("viewShare").onclick = () => {
+      const p = photos.find((x) => x.id === viewingId);
+      if (p) sharePhoto(p);
+    };
     document.getElementById("viewSave").onclick = () => {
       const p = photos.find((x) => x.id === viewingId);
       if (p) download(p.blob, fileName(p));
