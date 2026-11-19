@@ -4,6 +4,8 @@
 const SCENE_SECONDS = 20;
 const COUNTDOWN = 5;      // the last seconds of each scene count down to a webcam photo
 const PHOTO_SECONDS = 6;  // how long the photo stays up before the next scene
+const UPDATE_CHECK_SECONDS = 60; // how often to check whether a newer version is live
+const VERSION = new URL(document.currentScript.src).searchParams.get("v"); // the ?v= this page loaded
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const GAP = 12;     // space between neighbouring figures in a group (0 = touching)
@@ -129,7 +131,14 @@ let last = performance.now();
 let photoUntil = 0; // while a photo is showing: when to move on
 
 function goTo(i) {
-  current = (i + SCENES.length) % SCENES.length;
+  // A newer version is live: load it now, between scenes (see Auto-update below)
+  const next = (i + SCENES.length) % SCENES.length;
+  if (updateReady && !fsElement()) {
+    // Asking for the new ?v= skips any old copy cached along the way; ?scene= carries on where we were
+    location.replace(`${location.pathname}?v=${updateReady}&scene=${next}`);
+    return;
+  }
+  current = next;
   remaining = SCENE_SECONDS * 1000;
   photoUntil = 0;
   photoEl.hidden = true;
@@ -301,8 +310,24 @@ if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
   }, 1000 / BOIL_FPS);
 }
 
+/* ---------- Auto-update ---------- */
+// Every minute, check the live page's ?v= number. If it's newer than this page's, reload at the
+// next scene change so the installation never runs an old copy. A reload would exit fullscreen
+// started with the button or F key, so in that case it waits until fullscreen ends. (Chrome's
+// own full screen, View > Enter Full Screen or Cmd+Ctrl+F, survives a reload.)
+let updateReady = false; // becomes the live version number once a newer one is found
+async function checkForUpdate() {
+  try {
+    const res = await fetch(`${location.pathname}?update-check=${Date.now()}`, { cache: "no-store" });
+    const live = (await res.text()).match(/script\.js\?v=(\d+)/)?.[1];
+    if (live && live !== VERSION) updateReady = live;
+  } catch { /* offline or opened as a file: keep running this version */ }
+  return updateReady;
+}
+setInterval(checkForUpdate, UPDATE_CHECK_SECONDS * 1000);
+
 /* ---------- Start ---------- */
-goTo(0);
+goTo(Number(new URLSearchParams(location.search).get("scene")) || 0); // ?scene= after an auto-update
 requestAnimationFrame(tick);
 // Measure the remaining icons now, a few at a time, so the first visit to each scene is instant
 const toMeasure = Object.keys(ICONS);

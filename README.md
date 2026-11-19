@@ -55,6 +55,12 @@ Open `index.html` in a browser, or serve the folder:
 python3 -m http.server 8000
 ```
 
+## Auto-update
+
+Once a minute, the installation checks whether a newer version is live (a higher `?v=` number in `index.html`). If there is one, it reloads itself at the next scene change and carries on from there, so a laptop left running always ends up on the latest version. This is why it matters to bump `?v=` with every change.
+
+A reload exits fullscreen started with the button or **F**, so in that mode the update waits until you leave fullscreen. To get updates even while full screen, use Chrome's own full screen instead: **View → Enter Full Screen** (Cmd+Ctrl+F), which stays on through reloads.
+
 ## Fullscreen
 
 Click the button in the bottom-right corner or press **F**. While fullscreen, the button and cursor hide after a few seconds of no movement.
