@@ -174,22 +174,41 @@ const flashEl = document.getElementById("flash");
 const photoEl = document.getElementById("photo");
 let camReady = false;
 
-if (navigator.mediaDevices?.getUserMedia) {
-  navigator.mediaDevices
-    .getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false })
-    .then((stream) => { cam.srcObject = stream; return cam.play(); })
-    .then(() => { camReady = true; })
-    .catch((err) => console.warn("Camera not available, photos are off:", err));
+// Prefer the laptop's own camera over a phone (Continuity Camera) or other plugged-in cameras
+const BUILT_IN_CAMERA = /facetime|built-?in|integrated/i;
+
+async function startCamera() {
+  const media = navigator.mediaDevices;
+  const size = { width: { ideal: 1280 }, height: { ideal: 720 } };
+  let stream = await media.getUserMedia({ video: size, audio: false });
+  // Camera names are only visible after permission is granted, so check them now
+  const builtIn = (await media.enumerateDevices())
+    .find((d) => d.kind === "videoinput" && BUILT_IN_CAMERA.test(d.label));
+  const using = stream.getVideoTracks()[0];
+  if (builtIn && using.getSettings().deviceId !== builtIn.deviceId) {
+    using.stop();
+    stream = await media.getUserMedia({ video: { ...size, deviceId: { exact: builtIn.deviceId } }, audio: false });
+  }
+  cam.srcObject = stream;
+  await cam.play();
+  camReady = true;
+  console.info("Camera:", stream.getVideoTracks()[0].label);
 }
 
+if (navigator.mediaDevices?.getUserMedia) {
+  startCamera().catch((err) => console.warn("Camera not available, photos are off:", err));
+}
+
+const countdownNum = document.getElementById("countdownNum");
 function showCountdown(n) {
-  if (n === null) { countdownEl.hidden = true; countdownEl.textContent = ""; return; }
-  if (countdownEl.textContent === String(n)) return;
+  document.body.classList.toggle("counting", n !== null); // shows the live preview
+  if (n === null) { countdownEl.hidden = true; countdownNum.textContent = ""; return; }
+  if (countdownNum.textContent === String(n)) return;
   countdownEl.hidden = false;
-  countdownEl.textContent = n;
-  countdownEl.classList.remove("tick");
-  void countdownEl.offsetWidth; // restart the pop animation for each number
-  countdownEl.classList.add("tick");
+  countdownNum.textContent = n;
+  countdownNum.classList.remove("tick");
+  void countdownNum.offsetWidth; // restart the pop animation for each number
+  countdownNum.classList.add("tick");
 }
 
 // Grab the current camera frame, mirrored like a selfie so it lines up with the silhouette

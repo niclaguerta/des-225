@@ -16,9 +16,9 @@ Each scene lasts 20 seconds. Change `SCENE_SECONDS` at the top of `script.js` to
 
 ## Webcam photo
 
-The last 5 seconds of each scene count down on screen, then the webcam takes a photo (mirrored like a selfie). The photo shows for 4 seconds, then the next scene starts. Change `COUNTDOWN` and `PHOTO_SECONDS` at the top of `script.js` to adjust.
+The last 5 seconds of each scene count down on screen with a camera badge, and a live, mirrored camera preview appears in the top-right corner so people can line up. Then the webcam takes a photo (mirrored like a selfie). The photo shows for 4 seconds, then the next scene starts. Change `COUNTDOWN` and `PHOTO_SECONDS` at the top of `script.js` to adjust.
 
-It uses the browser's built-in camera API, so no extra library is needed. The browser asks for camera permission the first time; click Allow. The camera only works on `https://` pages or `localhost`, which includes the GitHub Pages site. If permission is refused or there is no camera, scenes advance without photos. Photos are not saved or uploaded anywhere yet.
+It uses the browser's built-in camera API, so no extra library is needed. It always picks the laptop's built-in camera (FaceTime HD) over an iPhone or other camera, if one is there. The browser asks for camera permission the first time; click Allow. The camera only works on `https://` pages or `localhost`, which includes the GitHub Pages site. If permission is refused or there is no camera, scenes advance without photos. Photos are not saved or uploaded anywhere yet.
 
 ## Editing scenes
 
