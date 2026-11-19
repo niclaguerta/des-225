@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Rubik:wght@500;700&display=swap" rel="stylesheet">
   <!-- Bump ?v= after each change so browsers load the new files instead of an old copy -->
-  <link rel="stylesheet" href="style.css?v=19">
+  <link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
   <!-- "Line boil" wobble, like the Unity shader: noise nudges the edges, and a new noise
@@ -58,14 +58,20 @@
   <div class="flash" id="flash" aria-hidden="true"></div>
   <img class="photo" id="photo" alt="Photo of you matching the silhouette" hidden>
 
+  <!-- Pause: stops the timer and turns the camera off (Space does the same) -->
+  <button class="fs-btn pause-btn" id="pauseBtn" type="button" aria-label="Pause timer and camera" aria-pressed="false" title="Pause (Space)">
+    <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
+    <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z"/></svg>
+  </button>
+
   <button class="fs-btn" id="fsBtn" type="button" aria-label="Enter fullscreen" title="Fullscreen (F)">
     <svg class="icon-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
     <svg class="icon-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
   </button>
 
-  <script src="icons.js?v=19"></script>
-  <script src="scenes.js?v=19"></script>
-  <script src="photos-db.js?v=19"></script>
-  <script src="script.js?v=19"></script>
+  <script src="icons.js?v=20"></script>
+  <script src="scenes.js?v=20"></script>
+  <script src="photos-db.js?v=20"></script>
+  <script src="script.js?v=20"></script>
 </body>
 </html>

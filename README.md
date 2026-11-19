@@ -9,7 +9,7 @@ The page cycles through silhouette scenes (solo figures and small groups) for pe
 | Key | Action |
 | --- | --- |
 | → / ← | Next / previous scene (swipe on touch screens) |
-| Space | Pause / resume the timer |
+| Space, or the ⏸ button (bottom right) | Pause / resume the timer and turn the camera off / on |
 | F | Fullscreen (Esc to exit) |
 
 Each scene lasts 20 seconds. Change `SCENE_SECONDS` at the top of `script.js` to adjust.
@@ -18,7 +18,9 @@ Each scene lasts 20 seconds. Change `SCENE_SECONDS` at the top of `script.js` to
 
 The last 5 seconds of each scene count down on screen with a camera badge, and a live, mirrored camera preview appears in the top-right corner so people can line up. Then the webcam takes a photo (mirrored like a selfie). The photo shows for 6 seconds, then the next scene starts. Change `COUNTDOWN` and `PHOTO_SECONDS` at the top of `script.js` to adjust.
 
-It uses the browser's built-in camera API, so no extra library is needed. It always picks the laptop's built-in camera (FaceTime HD) over an iPhone or other camera, if one is there. The browser asks for camera permission the first time; click Allow. The camera only works on `https://` pages or `localhost`, which includes the GitHub Pages site. If permission is refused or there is no camera, scenes advance without photos. ## Photo gallery
+It uses the browser's built-in camera API, so no extra library is needed. It always picks the laptop's built-in camera (FaceTime HD) over an iPhone or other camera, if one is there. The browser asks for camera permission the first time; click Allow. The camera only works on `https://` pages or `localhost`, which includes the GitHub Pages site. If permission is refused or there is no camera, scenes advance without photos. While paused, the timer stops, no photos are taken, and the camera is fully turned off (the Mac's green camera light goes out). Resuming turns it back on.
+
+## Photo gallery
 
 Every photo is saved in the browser on the laptop running the installation. To see them, open `gallery.html` (https://niclaguerta.github.io/des-225/gallery.html) **on the same laptop, in the same browser**. Click a photo to see it larger (← → step through, Esc or a click outside closes). From there you can download one photo or all of them as a .zip, or delete them.
 

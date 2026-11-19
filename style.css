@@ -234,6 +234,15 @@ body {
   stroke-linecap: round; stroke-linejoin: round;
 }
 .fs-btn .icon-exit { display: none; }
+
+/* Pause button sits just left of the fullscreen button */
+.pause-btn { right: 92px; }
+.pause-btn .icon-play { display: none; fill: var(--ink); stroke-width: 2; }
+.is-paused .pause-btn { background: var(--pink); }
+.is-paused .pause-btn .icon-pause { display: none; }
+.is-paused .pause-btn .icon-play { display: block; }
+/* Keep the button visible while paused, even when fullscreen hides the controls */
+.is-fullscreen.idle.is-paused .pause-btn { opacity: 1; pointer-events: auto; }
 .is-fullscreen .fs-btn .icon-enter { display: none; }
 .is-fullscreen .fs-btn .icon-exit { display: block; }
 

@@ -158,9 +158,11 @@ function updateTimer() {
 function tick(now) {
   const dt = now - last;
   last = now;
-  if (photoUntil) {
+  if (paused) {
+    if (photoUntil) photoUntil += dt; // hold the photo on screen while paused
+  } else if (photoUntil) {
     if (now >= photoUntil) goTo(current + 1);
-  } else if (!paused) {
+  } else {
     remaining -= dt;
     if (remaining <= 0) {
       remaining = 0;
@@ -198,15 +200,40 @@ async function startCamera() {
     using.stop();
     stream = await media.getUserMedia({ video: { ...size, deviceId: { exact: builtIn.deviceId } }, audio: false });
   }
+  if (paused) { stream.getTracks().forEach((t) => t.stop()); return; } // paused while it was starting
   cam.srcObject = stream;
   await cam.play();
   camReady = true;
   console.info("Camera:", stream.getVideoTracks()[0].label);
 }
 
-if (navigator.mediaDevices?.getUserMedia) {
+function cameraOn() {
+  if (!navigator.mediaDevices?.getUserMedia) return;
   startCamera().catch((err) => console.warn("Camera not available, photos are off:", err));
 }
+
+// Fully release the camera, so the Mac's green camera light goes off
+function cameraOff() {
+  camReady = false;
+  cam.srcObject?.getTracks().forEach((t) => t.stop());
+  cam.srcObject = null;
+}
+
+cameraOn();
+
+/* ---------- Pause (button or Space): stops the timer and turns the camera off ---------- */
+const pauseBtn = document.getElementById("pauseBtn");
+function togglePause() {
+  paused = !paused;
+  if (paused) cameraOff();
+  else cameraOn();
+  document.body.classList.toggle("is-paused", paused);
+  pauseBtn.setAttribute("aria-pressed", paused);
+  pauseBtn.setAttribute("aria-label", paused ? "Resume timer and camera" : "Pause timer and camera");
+  pauseBtn.title = paused ? "Resume (Space)" : "Pause (Space)";
+  updateTimer();
+}
+pauseBtn.addEventListener("click", () => { togglePause(); pauseBtn.blur(); });
 
 const countdownNum = document.getElementById("countdownNum");
 function showCountdown(n) {
@@ -246,8 +273,7 @@ document.addEventListener("keydown", (e) => {
   else if (e.key === "ArrowLeft") goTo(current - 1);
   else if (e.key === " ") {
     e.preventDefault();
-    paused = !paused;
-    updateTimer();
+    togglePause();
   } else if (e.key === "f" || e.key === "F") toggleFullscreen();
 });
 
