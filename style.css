@@ -1,7 +1,7 @@
 :root {
   --ink: #2a1033;
   --cream: #fff8e7;
-  --pink: #ff5a8a;
+  --green: #1fb36b;
 }
 
 * { box-sizing: border-box; margin: 0; }
@@ -37,8 +37,9 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  /* No bottom padding: the floor in each scene is the screen's bottom edge */
-  padding: 3vh clamp(16px, 8vw, 120px) 0;
+  /* No bottom padding: the floor in each scene is the screen's bottom edge.
+     Side padding = the timer's width + its 20px inset + a small gap, so wide scenes stay clear of it. */
+  padding: 3vh clamp(16px, calc(11vw + 32px), 192px) 0;
 }
 
 .stage svg {
@@ -70,7 +71,7 @@ body {
 
 .timer {
   position: relative;
-  width: clamp(56px, 6vw, 84px);
+  width: clamp(96px, 11vw, 160px);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -84,7 +85,7 @@ body {
 .timer .track { fill: var(--cream); stroke: var(--ink); stroke-width: 3; }
 .timer .ring {
   fill: none;
-  stroke: var(--pink);
+  stroke: var(--green);
   stroke-width: 6;
   stroke-linecap: round;
   stroke-dasharray: 169.65;  /* 2 * pi * 27 */
@@ -92,10 +93,10 @@ body {
 .timer span {
   position: relative;
   font-family: "Bagel Fat One", "Rubik", sans-serif;
-  font-size: clamp(1.2rem, 2vw, 1.9rem);
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
 }
-.timer.paused span { font-size: clamp(0.8rem, 1.2vw, 1.1rem); }
-.timer.urgent span { color: #d6175a; }
+.timer.paused span { font-size: clamp(1.1rem, 1.9vw, 1.7rem); }
+.timer.urgent span { color: #0f7a44; }
 
 
 /* ---------- Webcam photo ---------- */
@@ -227,7 +228,7 @@ body {
 }
 .fs-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
 .fs-btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
-.fs-btn:focus-visible { outline: 3px solid var(--pink); outline-offset: 4px; }
+.fs-btn:focus-visible { outline: 3px solid var(--green); outline-offset: 4px; }
 .fs-btn svg {
   width: 26px; height: 26px;
   fill: none; stroke: var(--ink); stroke-width: 2.5;
@@ -238,7 +239,7 @@ body {
 /* Pause button sits just left of the fullscreen button */
 .pause-btn { right: 92px; }
 .pause-btn .icon-play { display: none; fill: var(--ink); stroke-width: 2; }
-.is-paused .pause-btn { background: var(--pink); }
+.is-paused .pause-btn { background: var(--green); }
 .is-paused .pause-btn .icon-pause { display: none; }
 .is-paused .pause-btn .icon-play { display: block; }
 /* Keep the button visible while paused, even when fullscreen hides the controls */
