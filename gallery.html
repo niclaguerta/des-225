@@ -62,7 +62,65 @@
       box-shadow: 6px 6px 0 var(--ink);
       padding: 10px 10px 12px;
     }
-    .card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--ink); }
+    .thumb { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+    .thumb:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+    .card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--ink); transition: filter 0.15s; }
+    .thumb:hover img { filter: brightness(1.08); }
+
+    /* ---------- Quick view ---------- */
+    .viewer {
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      max-height: none;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+    }
+    .viewer::backdrop { background: rgb(42 16 51 / 0.88); }
+    .viewer[open] {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: clamp(8px, 2vw, 24px);
+      padding: clamp(16px, 3vw, 40px);
+    }
+    .viewer figure {
+      justify-self: center;
+      max-width: 100%;
+      background: var(--cream);
+      border: 3px solid var(--ink);
+      box-shadow: 8px 8px 0 var(--ink);
+      padding: 12px 12px 14px;
+      animation: pop-in 0.25s cubic-bezier(.34, 1.56, .64, 1);
+    }
+    .viewer img {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 2 * clamp(16px, 3vw, 40px) - 110px);
+      background: var(--ink);
+    }
+    .viewer .meta { font-size: 1.05rem; }
+    .round {
+      width: 56px;
+      height: 56px;
+      padding: 0;
+      border-radius: 50%;
+      font-size: 1.8rem;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+    }
+    .close-btn { position: absolute; top: clamp(16px, 3vw, 32px); right: clamp(16px, 3vw, 32px); }
+    @keyframes pop-in { from { transform: scale(0.92); opacity: 0; } }
+    @media (max-width: 600px) {
+      .viewer[open] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; }
+      .viewer figure { grid-column: 1 / -1; grid-row: 1; }
+      .viewer .prev { grid-row: 2; justify-self: end; }
+      .viewer .next { grid-row: 2; justify-self: start; }
+    }
+    @media (prefers-reduced-motion: reduce) { .viewer figure { animation: none; } }
     .meta { display: flex; justify-content: space-between; gap: 8px; margin: 10px 2px; font-size: 0.95rem; }
     .meta strong { font-weight: 700; }
     .card-actions { display: flex; gap: 10px; }
@@ -81,6 +139,22 @@
   <p class="note">Photos from the installation, newest first. They're saved in this browser on this computer only. Download them to keep a copy.</p>
   <main class="grid" id="grid"></main>
 
+  <!-- Quick view: click a photo to see it large. ← → step through, Esc or a click outside closes. -->
+  <dialog class="viewer" id="viewer" aria-label="Photo quick view">
+    <button class="round prev" id="viewPrev" type="button" aria-label="Previous photo">‹</button>
+    <figure>
+      <img id="viewImg" alt="">
+      <figcaption class="meta"><strong id="viewScene"></strong><span id="viewWhen"></span></figcaption>
+      <div class="card-actions">
+        <button class="small" id="viewSave" type="button">Download</button>
+        <button class="small" id="viewDelete" type="button">Delete</button>
+        <span class="view-pos" id="viewPos" style="margin-left:auto;align-self:center"></span>
+      </div>
+    </figure>
+    <button class="round next" id="viewNext" type="button" aria-label="Next photo">›</button>
+    <button class="round close-btn" id="viewClose" type="button" aria-label="Close">×</button>
+  </dialog>
+
   <script src="photos-db.js?v=19"></script>
   <script>
     const grid = document.getElementById("grid");
@@ -88,7 +162,8 @@
     const downloadAllBtn = document.getElementById("downloadAll");
     const deleteAllBtn = document.getElementById("deleteAll");
     let photos = [];
-    let urls = [];
+    let urls = [];  // image address for each photo, same order as photos
+    let whens = []; // readable time for each photo
 
     const pad = (n) => String(n).padStart(2, "0");
     function fileName(p) {
@@ -110,22 +185,22 @@
     async function render() {
       photos = (await PhotoDB.all()).sort((a, b) => b.time - a.time);
       urls.forEach(URL.revokeObjectURL);
-      urls = [];
+      urls = photos.map((p) => URL.createObjectURL(p.blob));
+      whens = photos.map((p) => new Date(p.time).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit" }));
       countEl.textContent = `${photos.length} photo${photos.length === 1 ? "" : "s"}`;
       downloadAllBtn.disabled = deleteAllBtn.disabled = !photos.length;
+      refreshViewer();
 
       if (!photos.length) {
         grid.innerHTML = '<p class="empty">No photos yet. They appear here as the installation takes them.</p>';
         return;
       }
-      grid.replaceChildren(...photos.map((p) => {
-        const url = URL.createObjectURL(p.blob);
-        urls.push(url);
+      grid.replaceChildren(...photos.map((p, i) => {
+        const url = urls[i], when = whens[i];
         const card = document.createElement("figure");
         card.className = "card";
-        const when = new Date(p.time).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit" });
         card.innerHTML = `
-          <img alt="">
+          <button class="thumb" type="button" aria-label="View larger"><img alt=""></button>
           <figcaption class="meta"><strong></strong><span></span></figcaption>
           <div class="card-actions">
             <button class="small" type="button" data-act="save">Download</button>
@@ -135,13 +210,71 @@
         card.querySelector("img").alt = `Photo for "${p.scene}", ${when}`;
         card.querySelector("strong").textContent = p.scene || "Photo";
         card.querySelector(".meta span").textContent = when;
+        card.querySelector(".thumb").onclick = () => openViewer(p.id);
         card.querySelector('[data-act="save"]').onclick = () => download(p.blob, fileName(p));
-        card.querySelector('[data-act="delete"]').onclick = async () => {
-          if (confirm("Delete this photo? This can't be undone.")) { await PhotoDB.remove(p.id); render(); }
-        };
+        card.querySelector('[data-act="delete"]').onclick = () => deletePhoto(p);
         return card;
       }));
     }
+
+    async function deletePhoto(p) {
+      if (confirm("Delete this photo? This can't be undone.")) { await PhotoDB.remove(p.id); render(); }
+    }
+
+    /* ---------- Quick view ---------- */
+    const viewer = document.getElementById("viewer");
+    const viewImg = document.getElementById("viewImg");
+    let viewingId = null; // which photo the quick view shows (kept by id so it survives a refresh)
+
+    function openViewer(id) {
+      viewingId = id;
+      refreshViewer();
+      if (!viewer.open) viewer.showModal();
+    }
+
+    // Show the current photo, or close if it's gone (deleted here or in another tab)
+    function refreshViewer() {
+      if (viewingId === null) return;
+      const i = photos.findIndex((p) => p.id === viewingId);
+      if (i < 0) { viewer.close(); return; }
+      const p = photos[i];
+      viewImg.src = urls[i];
+      viewImg.alt = `Photo for "${p.scene}", ${whens[i]}`;
+      document.getElementById("viewScene").textContent = p.scene || "Photo";
+      document.getElementById("viewWhen").textContent = whens[i];
+      document.getElementById("viewPos").textContent = `${i + 1} / ${photos.length}`;
+      document.getElementById("viewPrev").disabled = i === 0;
+      document.getElementById("viewNext").disabled = i === photos.length - 1;
+    }
+
+    function step(by) {
+      const i = photos.findIndex((p) => p.id === viewingId) + by;
+      if (i >= 0 && i < photos.length) { viewingId = photos[i].id; refreshViewer(); }
+    }
+
+    document.getElementById("viewPrev").onclick = () => step(-1);
+    document.getElementById("viewNext").onclick = () => step(1);
+    document.getElementById("viewClose").onclick = () => viewer.close();
+    document.getElementById("viewSave").onclick = () => {
+      const p = photos.find((x) => x.id === viewingId);
+      if (p) download(p.blob, fileName(p));
+    };
+    document.getElementById("viewDelete").onclick = async () => {
+      const i = photos.findIndex((p) => p.id === viewingId);
+      if (i < 0 || !confirm("Delete this photo? This can't be undone.")) return;
+      const after = photos[i + 1] ?? photos[i - 1]; // show a neighbour next
+      await PhotoDB.remove(viewingId);
+      viewingId = after ? after.id : null;
+      if (!after) viewer.close();
+      render();
+    };
+    viewer.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
+    });
+    // A click on the dark area around the photo closes the quick view
+    viewer.addEventListener("click", (e) => { if (e.target === viewer) viewer.close(); });
+    viewer.addEventListener("close", () => { viewingId = null; });
 
     downloadAllBtn.onclick = async () => {
       downloadAllBtn.disabled = true;
