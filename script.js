@@ -2,6 +2,8 @@
    Scenes: show silhouettes, switch with ← →, auto-advance timer
    ============================================================ */
 const SCENE_SECONDS = 20;
+const COUNTDOWN = 5;      // the last seconds of each scene count down to a webcam photo
+const PHOTO_SECONDS = 4;  // how long the photo stays up before the next scene
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const GAP = 12;     // space between neighbouring figures in a group (0 = touching)
@@ -124,10 +126,13 @@ let current = 0;
 let remaining = SCENE_SECONDS * 1000;
 let paused = false;
 let last = performance.now();
+let photoUntil = 0; // while a photo is showing: when to move on
 
 function goTo(i) {
   current = (i + SCENES.length) % SCENES.length;
   remaining = SCENE_SECONDS * 1000;
+  photoUntil = 0;
+  photoEl.hidden = true;
   renderScene(SCENES[current]);
   updateTimer();
 }
@@ -138,17 +143,68 @@ function updateTimer() {
   timerEl.classList.toggle("paused", paused);
   timerEl.classList.toggle("urgent", !paused && secs <= 5);
   timerRing.style.strokeDashoffset = RING_LEN * (1 - remaining / (SCENE_SECONDS * 1000));
+  showCountdown(!paused && camReady && remaining > 0 && secs <= COUNTDOWN ? secs : null);
 }
 
 function tick(now) {
   const dt = now - last;
   last = now;
-  if (!paused) {
+  if (photoUntil) {
+    if (now >= photoUntil) goTo(current + 1);
+  } else if (!paused) {
     remaining -= dt;
-    if (remaining <= 0) goTo(current + 1);
-    else updateTimer();
+    if (remaining <= 0) {
+      remaining = 0;
+      updateTimer();
+      if (camReady) {
+        takePhoto();
+        photoUntil = now + PHOTO_SECONDS * 1000;
+      } else goTo(current + 1);
+    } else updateTimer();
   }
   requestAnimationFrame(tick);
+}
+
+/* ---------- Webcam photo ---------- */
+// Uses the browser's built-in camera API (no extra library). The browser asks for camera
+// permission once; if it's refused or there's no camera, scenes just advance without photos.
+const cam = document.getElementById("cam");
+const countdownEl = document.getElementById("countdown");
+const flashEl = document.getElementById("flash");
+const photoEl = document.getElementById("photo");
+let camReady = false;
+
+if (navigator.mediaDevices?.getUserMedia) {
+  navigator.mediaDevices
+    .getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false })
+    .then((stream) => { cam.srcObject = stream; return cam.play(); })
+    .then(() => { camReady = true; })
+    .catch((err) => console.warn("Camera not available, photos are off:", err));
+}
+
+function showCountdown(n) {
+  if (n === null) { countdownEl.hidden = true; countdownEl.textContent = ""; return; }
+  if (countdownEl.textContent === String(n)) return;
+  countdownEl.hidden = false;
+  countdownEl.textContent = n;
+  countdownEl.classList.remove("tick");
+  void countdownEl.offsetWidth; // restart the pop animation for each number
+  countdownEl.classList.add("tick");
+}
+
+// Grab the current camera frame, mirrored like a selfie so it lines up with the silhouette
+function takePhoto() {
+  const w = cam.videoWidth, h = cam.videoHeight;
+  const canvas = Object.assign(document.createElement("canvas"), { width: w, height: h });
+  const ctx = canvas.getContext("2d");
+  ctx.translate(w, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(cam, 0, 0, w, h);
+  photoEl.src = canvas.toDataURL("image/jpeg", 0.9);
+  photoEl.hidden = false;
+  flashEl.classList.remove("go");
+  void flashEl.offsetWidth;
+  flashEl.classList.add("go");
 }
 
 document.addEventListener("keydown", (e) => {

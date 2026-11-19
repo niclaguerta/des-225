@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Rubik:wght@500;700&display=swap" rel="stylesheet">
   <!-- Bump ?v= after each change so browsers load the new files instead of an old copy -->
-  <link rel="stylesheet" href="style.css?v=15">
+  <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
   <!-- "Line boil" wobble, like the Unity shader: noise nudges the edges, and a new noise
@@ -38,13 +38,19 @@
     </div>
   </footer>
 
+  <!-- Webcam photo: countdown over the last seconds, a flash, then the photo -->
+  <video class="cam" id="cam" muted playsinline aria-hidden="true"></video>
+  <div class="countdown" id="countdown" aria-live="assertive" hidden></div>
+  <div class="flash" id="flash" aria-hidden="true"></div>
+  <img class="photo" id="photo" alt="Photo of you matching the silhouette" hidden>
+
   <button class="fs-btn" id="fsBtn" type="button" aria-label="Enter fullscreen" title="Fullscreen (F)">
     <svg class="icon-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
     <svg class="icon-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
   </button>
 
-  <script src="icons.js?v=15"></script>
-  <script src="scenes.js?v=15"></script>
-  <script src="script.js?v=15"></script>
+  <script src="icons.js?v=16"></script>
+  <script src="scenes.js?v=16"></script>
+  <script src="script.js?v=16"></script>
 </body>
 </html>

@@ -9,10 +9,16 @@ The page cycles through silhouette scenes (solo figures and small groups) for pe
 | Key | Action |
 | --- | --- |
 | → / ← | Next / previous scene (swipe on touch screens) |
-| Space | Pause / resume the 30-second timer |
+| Space | Pause / resume the timer |
 | F | Fullscreen (Esc to exit) |
 
-Each scene auto-advances after 30 seconds. Change `SCENE_SECONDS` at the top of `script.js` to adjust.
+Each scene lasts 20 seconds. Change `SCENE_SECONDS` at the top of `script.js` to adjust.
+
+## Webcam photo
+
+The last 5 seconds of each scene count down on screen, then the webcam takes a photo (mirrored like a selfie). The photo shows for 4 seconds, then the next scene starts. Change `COUNTDOWN` and `PHOTO_SECONDS` at the top of `script.js` to adjust.
+
+It uses the browser's built-in camera API, so no extra library is needed. The browser asks for camera permission the first time; click Allow. The camera only works on `https://` pages or `localhost`, which includes the GitHub Pages site. If permission is refused or there is no camera, scenes advance without photos. Photos are not saved or uploaded anywhere yet.
 
 ## Editing scenes
 
